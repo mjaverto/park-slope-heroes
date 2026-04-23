@@ -3,6 +3,7 @@ import { Player } from '../entities/Player.js';
 import { StreetRat } from '../entities/StreetRat.js';
 import { FrenchFries } from '../entities/FrenchFries.js';
 import { getStage } from '../data/stages.js';
+import { SoundManager } from '../audio/SoundManager.js';
 
 const RAT_CONTACT_DAMAGE = 5;
 const FRIES_HEAL = 25;
@@ -38,9 +39,18 @@ export class BootScene extends Phaser.Scene {
 
     // French fries (pickup) — shared.
     this.load.image('fries', '/assets/sprites/fries.png');
+
+    // Audio (SFX + music). SoundManager registers itself in create(), but the
+    // loader calls live here so Phaser has textures/audio ready by create().
+    new SoundManager(this).preload();
   }
 
   create() {
+    // SoundManager must be created before the Player so entities can reach it
+    // via `this.scene.sound_mgr?.playSfx(...)`. Don't shadow Phaser's built-in
+    // `this.sound` — use `sound_mgr`.
+    this.sound_mgr = new SoundManager(this);
+
     this.gameOver = false;
     this.stageCleared = false;
 
@@ -119,6 +129,10 @@ export class BootScene extends Phaser.Scene {
     this.updateWaveText();
 
     this.gameOverText = null;
+
+    // Stage music starts once the scene is up. Autoplay is already unlocked
+    // because CharacterSelect's first-gesture handler ran before we got here.
+    this.sound_mgr.startMusic('music_stage1');
 
     // Kick off wave 1 immediately
     this.startWave(0);

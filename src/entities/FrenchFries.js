@@ -26,6 +26,7 @@ export class FrenchFries {
   consume() {
     if (this.consumed) return;
     this.consumed = true;
+    this.scene.sound_mgr?.playSfx('sfx_pickup');
     if (this.sprite && this.sprite.scene) this.sprite.destroy();
   }
 }

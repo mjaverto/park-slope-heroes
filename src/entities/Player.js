@@ -113,6 +113,7 @@ export class Player {
   attack() {
     this.attacking = true;
     this._setState('attacking');
+    this.scene.sound_mgr?.playSfx('sfx_attack');
 
     const dirX = this.facing === 'left' ? -1 : 1;
     const hx = this.sprite.x + dirX * this.reach;
@@ -151,6 +152,7 @@ export class Player {
     if (!this.alive || this.invulnerable) return;
     this.hp = Math.max(0, this.hp - n);
     this.invulnerable = true;
+    this.scene.sound_mgr?.playSfx('sfx_player_hurt');
 
     // Show hit texture briefly, then revert
     this._setState('hit');

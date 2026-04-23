@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { CHARACTERS } from '../data/characters.js';
+import { SoundManager } from '../audio/SoundManager.js';
 
 // Grid: 3 cols x 2 rows of 260x200 cards, 20px gap, centered in 1024x576.
 const CARD_W = 260;
@@ -39,9 +40,15 @@ export class CharacterSelect extends Phaser.Scene {
       // handle the other poses.
       this.load.image(`${c.key}-idle`, `/assets/sprites/${c.key}-idle.png`);
     }
+
+    // Audio — small enough to load in both scenes; Phaser dedupes by key.
+    new SoundManager(this).preload();
   }
 
   create() {
+    this.sound_mgr = new SoundManager(this);
+    this._musicStarted = false;
+
     this.selectedIndex = 0;
     this.cards = [];
 
@@ -105,6 +112,12 @@ export class CharacterSelect extends Phaser.Scene {
     this.input.keyboard.on('keydown-DOWN', () => this._move(0, 1));
     this.input.keyboard.on('keydown-ENTER', () => this._confirm());
     this.input.keyboard.on('keydown-SPACE', () => this._confirm());
+
+    // Autoplay gate: browsers block audio until the user interacts. Start
+    // menu music on the first keydown/pointerdown. _musicStarted flag keeps
+    // us from restarting on every key.
+    this.input.keyboard.on('keydown', () => this._ensureMusic());
+    this.input.on('pointerdown', () => this._ensureMusic());
 
     this._refreshSelection();
   }
@@ -209,10 +222,24 @@ export class CharacterSelect extends Phaser.Scene {
     }
   }
 
+  _ensureMusic() {
+    // _confirming guards against the ordering quirk where Phaser's generic
+    // `keydown` (used for our first-gesture gate) fires AFTER `keydown-SPACE`,
+    // so we'd otherwise restart menu music on the same key press that just
+    // transitioned us to BootScene.
+    if (this._musicStarted || this._confirming) return;
+    this._musicStarted = true;
+    this.sound_mgr.startMusic('music_menu');
+  }
+
   _confirm() {
     const chosen = CHARACTERS[this.selectedIndex];
     if (!chosen) return;
+    this._confirming = true;
     this.registry.set('chosenChar', chosen.key);
+    // Phaser doesn't auto-stop scene sounds on shutdown when added via
+    // `sound.add`; stop menu music explicitly before handing off.
+    this.sound_mgr.stopMusic();
     // Prefer Stage1 if it's been registered; otherwise fall back to BootScene.
     const nextKey = this.scene.manager.keys.Stage1 ? 'Stage1' : 'BootScene';
     this.scene.start(nextKey);

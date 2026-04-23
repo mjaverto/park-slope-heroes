@@ -83,6 +83,7 @@ export class StreetRat {
   takeDamage(n) {
     if (!this.alive) return;
     this.hp -= n;
+    this.scene.sound_mgr?.playSfx('sfx_hit');
 
     // Flash white via tint + show hit texture
     this._setState('hit');
@@ -101,6 +102,7 @@ export class StreetRat {
 
   die() {
     this.alive = false;
+    this.scene.sound_mgr?.playSfx('sfx_enemy_death');
     if (this.sprite && this.sprite.scene) {
       this.sprite.destroy();
     }
