@@ -82,14 +82,16 @@ const RAT_KING_IDENTITY =
 // --- Kid identity strings (locked per-character, used across all 6 poses) ----
 
 const THEO_IDENTITY =
-  "A 10-year-old boy hero (NOT a muscular adult), tall and lanky with shaggy blond hair falling " +
-  "over his eyes, bright green zip hoodie unzipped over a white tee, khaki cargo shorts, " +
+  "A 10-year-old African American boy hero (NOT a muscular adult), tall and lanky, dark brown skin, " +
+  "VERY SHORT CROPPED black hair (nearly buzzed, close to scalp — NOT curly afro, NOT long, NOT shaggy), " +
+  "bright green zip hoodie unzipped over a white tee, khaki cargo shorts, " +
   "red high-top sneakers, holding a polished wooden bo staff.";
 
 const LYELLE_IDENTITY =
-  "A 10-year-old girl hero (NOT a muscular adult), athletic build, curly auburn-red hair in a " +
-  "loose ponytail, bright yellow graphic t-shirt with a bold black star print, cuffed blue denim " +
-  "shorts, white canvas sneakers, twin silver sai daggers with red-wrapped hilts.";
+  "A 10-year-old boy hero (NOT a muscular adult), athletic build, light skin, SHORT MESSY BLOND HAIR " +
+  "(straight and boyish, NOT long, NOT in a ponytail), bright blue eyes, bright yellow graphic t-shirt " +
+  "with a bold black star print, cuffed blue denim shorts, white canvas sneakers, " +
+  "twin silver sai daggers with red-wrapped hilts.";
 
 const MATTHEW_IDENTITY =
   "A 10-year-old boy hero (NOT a muscular adult), compact and wiry, short spiky black hair, " +
@@ -407,7 +409,7 @@ const SUBJECTS = {
     size: "1024x1024",
     prompt: posePrompt(
       LYELLE_IDENTITY,
-      "standing relaxed, weight on back foot, one sai held in each hand pointing downward at her sides, " +
+      "standing relaxed, weight on back foot, one sai held in each hand pointing downward at his sides, " +
         "alert calm expression"
     ),
   },
@@ -417,7 +419,7 @@ const SUBJECTS = {
     prompt: posePrompt(
       LYELLE_IDENTITY,
       "mid-stride walking cycle, LEFT foot forward and planted, right foot lifted behind, " +
-        "both sai held in low guard in front of her, blades angled forward, focused face"
+        "both sai held in low guard in front of him, blades angled forward, focused face"
     ),
   },
   "lyelle-walk-2": {
@@ -426,7 +428,7 @@ const SUBJECTS = {
     prompt: posePrompt(
       LYELLE_IDENTITY,
       "mid-stride walking cycle, RIGHT foot forward and planted, left foot lifted behind, " +
-        "both sai held in low guard in front of her, blades angled forward, focused face"
+        "both sai held in low guard in front of him, blades angled forward, focused face"
     ),
   },
   "lyelle-attack-1": {
@@ -434,7 +436,7 @@ const SUBJECTS = {
     size: "1024x1024",
     prompt: posePrompt(
       LYELLE_IDENTITY,
-      "sai cross-strike action pose, both sai swinging inward past each other across her chest " +
+      "sai cross-strike action pose, both sai swinging inward past each other across his chest " +
         "in an X-shape, body leaning into the strike, fierce yell"
     ),
   },
@@ -443,7 +445,7 @@ const SUBJECTS = {
     size: "1024x1024",
     prompt: posePrompt(
       LYELLE_IDENTITY,
-      "sai outward thrust, both sai stabbing forward fully extended in front of her, arms " +
+      "sai outward thrust, both sai stabbing forward fully extended in front of him, arms " +
         "straight out, front leg lunged forward, fierce expression"
     ),
   },
@@ -453,7 +455,7 @@ const SUBJECTS = {
     prompt: posePrompt(
       LYELLE_IDENTITY,
       "staggered back from a hit, body leaning backward off-balance, ONE sai raised defensively " +
-        "across her face, other sai flailing outward, eyes scrunched in pain"
+        "across his face, other sai flailing outward, eyes scrunched in pain"
     ),
   },
 
