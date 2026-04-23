@@ -60,14 +60,45 @@ const AIDEN_IDENTITY =
   "in an X-pattern on his back.";
 
 const RAT_IDENTITY =
-  "A muscular anthropomorphic street rat villain, shirtless with patchy grey-brown fur, " +
-  "bulging arm and chest muscles, sneering with yellow fangs, angry red eyes, long pink tail, " +
-  "wearing torn blue jeans with a chain belt, NYC gangster vibe, no shoes.";
+  "A muscular anthropomorphic street rat villain, shirtless with patchy warm brown-gray fur " +
+  "(brown dominant, not cool gray), bulging arm and chest muscles, sneering with yellow fangs, " +
+  "angry red eyes, long pink tail, wearing torn blue jeans with a chain belt, NYC gangster vibe, " +
+  "no shoes.";
+
+// --- Kid identity strings (locked per-character, used across all 6 poses) ----
+
+const THEO_IDENTITY =
+  "A 10-year-old boy hero (NOT a muscular adult), tall and lanky with shaggy blond hair falling " +
+  "over his eyes, bright green zip hoodie unzipped over a white tee, khaki cargo shorts, " +
+  "red high-top sneakers, holding a polished wooden bo staff.";
+
+const LYELLE_IDENTITY =
+  "A 10-year-old girl hero (NOT a muscular adult), athletic build, curly auburn-red hair in a " +
+  "loose ponytail, bright yellow graphic t-shirt with a bold black star print, cuffed blue denim " +
+  "shorts, white canvas sneakers, twin silver sai daggers with red-wrapped hilts.";
+
+const MATTHEW_IDENTITY =
+  "A 10-year-old boy hero (NOT a muscular adult), compact and wiry, short spiky black hair, " +
+  "white ribbed tank top, black skinny jeans, black hi-top sneakers, holding a pair of " +
+  "black-and-silver wooden nunchucks on a steel chain.";
+
+const KATHRYN_IDENTITY =
+  "A 10-year-old girl hero (NOT a muscular adult), long brown hair in a single side braid falling " +
+  "over her shoulder, purple-and-pink tie-dye t-shirt, olive green cargo pants, brown leather " +
+  "lace-up boots, wielding a kusarigama: a curved black-and-silver sickle connected to a long " +
+  "metal chain with a weighted end.";
+
+const RONAN_IDENTITY =
+  "A 10-year-old boy hero (NOT a muscular adult), stocky build, sandy blond buzzcut with a red " +
+  "bandana headband tied around his forehead, navy blue short-sleeve t-shirt, grey jogger sweatpants " +
+  "with elastic cuffs, black sneakers, holding a pair of black wooden tonfas (one in each hand).";
 
 // Build a per-pose character prompt that keeps identity locked and swaps the
-// pose description only.
-function posePrompt(identity, pose) {
-  return `${identity} Pose: ${pose}. ${POSE_FRAMING} Style: ${POSE_STYLE}`;
+// pose description only. Optional `paletteAnchor` reinforces color consistency
+// across frames that have historically drifted.
+function posePrompt(identity, pose, paletteAnchor) {
+  const anchor = paletteAnchor ? ` ${paletteAnchor}` : "";
+  return `${identity} Pose: ${pose}.${anchor} ${POSE_FRAMING} Style: ${POSE_STYLE}`;
 }
 
 // --- Subject registry --------------------------------------------------------
@@ -80,36 +111,8 @@ const SUBJECTS = {
       "A 10-year-old boy hero, shaggy brown hair, fierce red bandana over forehead, " +
       "wielding twin katanas crossed in front of him, blue jeans, white sneakers, red t-shirt.",
   },
-  theo: {
-    type: "char-sheet",
-    desc:
-      "A 10-year-old boy hero, messy blonde hair, purple bandana, holding a wooden bo staff " +
-      "diagonally, green cargo shorts, yellow t-shirt.",
-  },
-  lyelle: {
-    type: "char-sheet",
-    desc:
-      "A 9-year-old girl hero, dark curly shoulder-length hair, red bandana headband, twin sai daggers, " +
-      "purple hoodie, black leggings, pink sneakers.",
-  },
-  matthew: {
-    type: "char-sheet",
-    desc:
-      "A 10-year-old boy hero, short blond hair, orange bandana, swinging a pair of nunchucks, " +
-      "blue denim shorts, orange t-shirt, black hightops.",
-  },
-  kathryn: {
-    type: "char-sheet",
-    desc:
-      "A 9-year-old girl hero, brown hair in two pigtails, blue bandana, wielding a kusarigama " +
-      "(chain with curved sickle), teal dress over leggings, white sneakers.",
-  },
-  ronan: {
-    type: "char-sheet",
-    desc:
-      "An 8-year-old boy hero, bright red hair, green bandana, holding a pair of tonfas, " +
-      "grey shorts, green t-shirt, red sneakers.",
-  },
+  // Legacy char-sheet entries for kids were removed in favor of per-pose
+  // entries (theo-idle, lyelle-walk-1, etc.) further down in this registry.
   "street-rat": {
     type: "char-sheet",
     desc:
@@ -218,7 +221,9 @@ const SUBJECTS = {
     prompt: posePrompt(
       RAT_IDENTITY,
       "mid-stride advancing toward camera, RIGHT foot forward and planted, left foot lifted behind, " +
-        "fists clenched, shoulders rolling, prowling predatory gait"
+        "fists clenched, shoulders rolling, prowling predatory gait",
+      "EXACT color palette match to rat-walk-1: same warm brown-gray fur tone " +
+        "(brown dominant, not cool gray), same blue jeans, same pink tail, same chain belt."
     ),
   },
   "rat-attack": {
@@ -237,6 +242,289 @@ const SUBJECTS = {
       RAT_IDENTITY,
       "staggered back after taking a hit, body leaning backward off-balance, head snapped back, " +
         "arms flailing outward, eyes scrunched, spit flying from his mouth, tail whipping"
+    ),
+  },
+
+  // --- Theo: bo staff ------------------------------------------------------
+  "theo-idle": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      THEO_IDENTITY,
+      "standing relaxed, weight on back foot, wooden bo staff held vertically in his right hand " +
+        "with the bottom tip planted on the ground, free hand at his side, calm confident expression"
+    ),
+  },
+  "theo-walk-1": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      THEO_IDENTITY,
+      "mid-stride walking cycle, LEFT foot forward and planted, right foot lifted behind, " +
+        "bo staff carried casually angled across his body in both hands, determined face"
+    ),
+  },
+  "theo-walk-2": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      THEO_IDENTITY,
+      "mid-stride walking cycle, RIGHT foot forward and planted, left foot lifted behind, " +
+        "bo staff carried casually angled across his body in both hands, determined face"
+    ),
+  },
+  "theo-attack-1": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      THEO_IDENTITY,
+      "bo staff wind-up: both hands gripping the staff, raising it overhead ready to bring it down, " +
+        "front leg braced, fierce battle yell"
+    ),
+  },
+  "theo-attack-2": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      THEO_IDENTITY,
+      "bo staff mid-swing horizontal sweep, staff held level in both hands swinging outward to the " +
+        "right, body rotated with the swing, motion implied by staff angle, gritted teeth"
+    ),
+  },
+  "theo-hit": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      THEO_IDENTITY,
+      "staggered back from a hit, body leaning backward off-balance, bo staff held defensively " +
+        "across his chest in both hands, eyes scrunched in pain"
+    ),
+  },
+
+  // --- Lyelle: twin sai ----------------------------------------------------
+  "lyelle-idle": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      LYELLE_IDENTITY,
+      "standing relaxed, weight on back foot, one sai held in each hand pointing downward at her sides, " +
+        "alert calm expression"
+    ),
+  },
+  "lyelle-walk-1": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      LYELLE_IDENTITY,
+      "mid-stride walking cycle, LEFT foot forward and planted, right foot lifted behind, " +
+        "both sai held in low guard in front of her, blades angled forward, focused face"
+    ),
+  },
+  "lyelle-walk-2": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      LYELLE_IDENTITY,
+      "mid-stride walking cycle, RIGHT foot forward and planted, left foot lifted behind, " +
+        "both sai held in low guard in front of her, blades angled forward, focused face"
+    ),
+  },
+  "lyelle-attack-1": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      LYELLE_IDENTITY,
+      "sai cross-strike action pose, both sai swinging inward past each other across her chest " +
+        "in an X-shape, body leaning into the strike, fierce yell"
+    ),
+  },
+  "lyelle-attack-2": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      LYELLE_IDENTITY,
+      "sai outward thrust, both sai stabbing forward fully extended in front of her, arms " +
+        "straight out, front leg lunged forward, fierce expression"
+    ),
+  },
+  "lyelle-hit": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      LYELLE_IDENTITY,
+      "staggered back from a hit, body leaning backward off-balance, ONE sai raised defensively " +
+        "across her face, other sai flailing outward, eyes scrunched in pain"
+    ),
+  },
+
+  // --- Matthew: nunchucks --------------------------------------------------
+  "matthew-idle": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      MATTHEW_IDENTITY,
+      "standing relaxed, weight on back foot, nunchucks dangling loose from his right hand " +
+        "with the idle chuck resting against his thigh, cool confident smirk"
+    ),
+  },
+  "matthew-walk-1": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      MATTHEW_IDENTITY,
+      "mid-stride walking cycle, LEFT foot forward and planted, right foot lifted behind, " +
+        "nunchucks in his right hand spinning in a small arc, focused face"
+    ),
+  },
+  "matthew-walk-2": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      MATTHEW_IDENTITY,
+      "mid-stride walking cycle, RIGHT foot forward and planted, left foot lifted behind, " +
+        "nunchucks in his right hand spinning in a small arc, focused face"
+    ),
+  },
+  "matthew-attack-1": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      MATTHEW_IDENTITY,
+      "nunchuck cross-body whirl attack, nunchucks whirling horizontally across his chest, " +
+        "motion blur of the chain implied, body rotated into the swing, fierce yell"
+    ),
+  },
+  "matthew-attack-2": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      MATTHEW_IDENTITY,
+      "nunchuck downward smack, right arm raised overhead bringing the nunchucks down in a hard " +
+        "vertical strike, front leg braced, fierce expression"
+    ),
+  },
+  "matthew-hit": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      MATTHEW_IDENTITY,
+      "staggered back from a hit, body leaning backward off-balance, nunchucks flailing loose " +
+        "from his right hand, left arm raised defensively, eyes scrunched in pain"
+    ),
+  },
+
+  // --- Kathryn: kusarigama chain-scythe ------------------------------------
+  "kathryn-idle": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      KATHRYN_IDENTITY,
+      "standing relaxed, weight on back foot, sickle held in her right hand pointing down at her side, " +
+        "the long chain coiled neatly in her left hand, alert calm expression"
+    ),
+  },
+  "kathryn-walk-1": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      KATHRYN_IDENTITY,
+      "mid-stride walking cycle, LEFT foot forward and planted, right foot lifted behind, " +
+        "sickle in her right hand, chain held in her left hand swinging loose, focused face"
+    ),
+  },
+  "kathryn-walk-2": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      KATHRYN_IDENTITY,
+      "mid-stride walking cycle, RIGHT foot forward and planted, left foot lifted behind, " +
+        "sickle in her right hand, chain held in her left hand swinging loose, focused face"
+    ),
+  },
+  "kathryn-attack-1": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      KATHRYN_IDENTITY,
+      "chain throw action pose, her left arm extended forward hurling the weighted chain end " +
+        "outward, sickle still gripped in her right hand held back near her hip, body rotated " +
+        "into the throw, fierce yell"
+    ),
+  },
+  "kathryn-attack-2": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      KATHRYN_IDENTITY,
+      "sickle slash action pose, curved sickle in her right hand swinging in a wide arc in front " +
+        "of her, blade angle implying motion, chain trailing behind, body leaning into the slash, " +
+        "gritted teeth"
+    ),
+  },
+  "kathryn-hit": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      KATHRYN_IDENTITY,
+      "staggered back from a hit, body leaning backward off-balance, sickle held weakly at her side, " +
+        "chain flailing loose, free arm raised defensively, eyes scrunched in pain"
+    ),
+  },
+
+  // --- Ronan: twin tonfas --------------------------------------------------
+  "ronan-idle": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      RONAN_IDENTITY,
+      "standing relaxed, weight on back foot, one tonfa gripped in each hand with the long shaft " +
+        "reversed along his forearms (handle out front, shaft lying down his arm), confident stance"
+    ),
+  },
+  "ronan-walk-1": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      RONAN_IDENTITY,
+      "mid-stride walking cycle, LEFT foot forward and planted, right foot lifted behind, " +
+        "tonfas held in low guard reversed along his forearms, focused face"
+    ),
+  },
+  "ronan-walk-2": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      RONAN_IDENTITY,
+      "mid-stride walking cycle, RIGHT foot forward and planted, left foot lifted behind, " +
+        "tonfas held in low guard reversed along his forearms, focused face"
+    ),
+  },
+  "ronan-attack-1": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      RONAN_IDENTITY,
+      "tonfa elbow-spin strike, body rotated hard with his right elbow driving forward and the " +
+        "tonfa shaft swinging outward from his forearm like a bludgeon, other tonfa held defensively, " +
+        "fierce yell"
+    ),
+  },
+  "ronan-attack-2": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      RONAN_IDENTITY,
+      "tonfa straight punch action pose, right arm fully extended punching forward with the tonfa " +
+        "head leading the strike, left tonfa guard at his hip, front leg lunged forward, gritted teeth"
+    ),
+  },
+  "ronan-hit": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      RONAN_IDENTITY,
+      "staggered back from a hit, body leaning backward off-balance, one tonfa raised defensively " +
+        "across his face, other tonfa flailing outward, eyes scrunched in pain"
     ),
   },
 
