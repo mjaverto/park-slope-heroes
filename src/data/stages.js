@@ -5,14 +5,29 @@
 //
 // Each stage has:
 //  - name: display name (not yet shown in HUD; reserved for a future banner)
-//  - waves: ordered list of wave definitions. Each wave has `rats` = how
-//    many street rats to spawn simultaneously at the start of that wave.
+//  - Legacy (pre-scrolling) arena stages use `waves`: [{ rats: N }, ...].
+//  - Scrolling beat-em-up stages use `sections`: [{ triggerX, cameraLockX, rats }]
+//    where triggerX is the world-x the player must cross to activate the zone,
+//    cameraLockX is where the camera stops panning so the lock-zone is centered,
+//    and rats is the number of rats to spawn for that wave.
+//    A `sections`-based stage still exposes a `waves`-shape array for HUD
+//    compatibility (Wave N / M text).
 //
-// v1 ships with a single stage "5th Ave Sidewalks" that ramps 2 -> 3 -> 4.
+// Stage 1 is a scrolling street with three battle zones. Stages 2/3 (TBD)
+// will follow the same shape.
 
 export const STAGES = [
   {
     name: '5th Ave Sidewalks',
+    // Three battle zones along the 4608-wide world. Player walks in from the
+    // left, hits triggerX, camera locks around cameraLockX, rats spawn.
+    sections: [
+      { triggerX: 800, cameraLockX: 1024, rats: 2 },
+      { triggerX: 2100, cameraLockX: 2350, rats: 3 },
+      { triggerX: 3400, cameraLockX: 3650, rats: 4 },
+    ],
+    // Mirror-shape "waves" so existing HUD code that reads stage.waves.length
+    // and indexes currentWaveIndex keeps working without a branch.
     waves: [
       { rats: 2 },
       { rats: 3 },
