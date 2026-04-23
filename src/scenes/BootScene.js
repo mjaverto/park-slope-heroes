@@ -5,7 +5,7 @@ import { FrenchFries } from '../entities/FrenchFries.js';
 
 const RAT_RESPAWN_MS = 2000;
 const ATTACK_DAMAGE = 15;
-const RAT_CONTACT_DAMAGE = 10;
+const RAT_CONTACT_DAMAGE = 5;
 const FRIES_HEAL = 25;
 
 export class BootScene extends Phaser.Scene {

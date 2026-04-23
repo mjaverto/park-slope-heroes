@@ -2,12 +2,13 @@ import Phaser from 'phaser';
 
 const SPEED = 200;
 const ATTACK_LIFETIME_MS = 150;
-const ATTACK_SIZE = 16;
-// Katana reach: sprite's swung weapon extends further than the original 32-wide rectangle,
-// so we push the hitbox out to 45 to match what the eye sees.
-const ATTACK_OFFSET = 45;
-const INVULN_MS = 200;
-const KNOCKBACK = 220;
+// Katana sweep: a wide arc around the player's front half (TMNT-style), not a single point.
+// Previously 16x16 at offset 45 — that misses when the rat overlaps the player.
+const ATTACK_WIDTH = 70;
+const ATTACK_HEIGHT = 90;
+const ATTACK_OFFSET = 30;
+const INVULN_MS = 600;
+const KNOCKBACK = 300;
 const SCALE = 0.18;
 // Hit state duration when the player takes damage — shows the hit texture briefly.
 const HIT_TEXTURE_MS = 200;
@@ -105,10 +106,10 @@ export class Player {
 
     const dirX = this.facing === 'left' ? -1 : 1;
     const hx = this.sprite.x + dirX * ATTACK_OFFSET;
-    // Feet-anchored sprite: the body's visual center is roughly sprite.y - (body height / 2 in world px)
-    // Hitbox y at torso height ~= sprite.y - 60 (half of ~122 world-px body).
-    const hy = this.sprite.y - 60;
-    const hitbox = this.scene.add.rectangle(hx, hy, ATTACK_SIZE, ATTACK_SIZE, 0xffffff, 0);
+    // Feet-anchored sprite: hitbox centered vertically on torso.
+    // Taller hitbox (90) centered around -70 covers head-to-waist.
+    const hy = this.sprite.y - 70;
+    const hitbox = this.scene.add.rectangle(hx, hy, ATTACK_WIDTH, ATTACK_HEIGHT, 0xffffff, 0);
     hitbox.visible = false; // invisible — no debug box in real gameplay
     this.scene.physics.add.existing(hitbox);
     hitbox.body.setAllowGravity(false);
