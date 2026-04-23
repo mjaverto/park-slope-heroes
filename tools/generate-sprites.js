@@ -65,6 +65,20 @@ const RAT_IDENTITY =
   "angry red eyes, long pink tail, wearing torn blue jeans with a chain belt, NYC gangster vibe, " +
   "no shoes.";
 
+// Stage 2 mini-boss: Jacked Rat King. MUST read as a MASSIVE, more-shredded version
+// of the same species as RAT_IDENTITY — same warm brown-gray fur, same snout shape,
+// same posture family. Crown + brass knuckles + spiked collar + ripped denim are the
+// silhouette markers that make him visually distinct from regular street rats.
+const RAT_KING_IDENTITY =
+  "MASSIVE muscular mutant sewer rat king, roughly 2x the size of regular street rats, " +
+  "shirtless to show bulging warm brown-gray furred musculature (brown dominant, not cool gray), " +
+  "long pink tail, wears a tarnished brass crown with chipped jewels on his head, a spiked " +
+  "leather collar around his neck, ripped denim shorts, brass knuckles on both paws. " +
+  "Glowing red eyes, long scarred ears with chunks missing, yellow broken fangs, snarling face. " +
+  "More menacing and shredded than regular street rats but CLEARLY the same species — same fur " +
+  "palette, same snout shape, same posture style. 2D painterly pixel-art, 90s SNES arcade " +
+  "(TMNT: Turtles in Time Konami reference). Full-body character in silhouette-friendly pose.";
+
 // --- Kid identity strings (locked per-character, used across all 6 poses) ----
 
 const THEO_IDENTITY =
@@ -242,6 +256,92 @@ const SUBJECTS = {
       RAT_IDENTITY,
       "staggered back after taking a hit, body leaning backward off-balance, head snapped back, " +
         "arms flailing outward, eyes scrunched, spit flying from his mouth, tail whipping"
+    ),
+  },
+
+  // --- Jacked Rat King: Stage 2 mini-boss (6-pose set) ---------------------
+  // Generation order matters: rat-king-idle is generated first, then the other
+  // five poses cite its palette via `paletteAnchor` to keep fur/denim/crown
+  // colors locked across the set.
+  "rat-king-idle": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      RAT_KING_IDENTITY,
+      "standing tall and intimidating, crown firmly on head, arms held out and slightly flexed to " +
+        "show off his bulging musculature, brass-knuckled fists clenched, slight forward lean, " +
+        "snarling threatening expression looking down at the camera, tail lashing behind him"
+    ),
+  },
+  "rat-king-walk-1": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      RAT_KING_IDENTITY,
+      "heavy stomping advance, LEFT foot forward and planted hard on the ground, right foot lifted " +
+        "behind mid-step, fur and muscles jiggling with the impact, brass-knuckled fists clenched, " +
+        "shoulders rolling aggressively, crown on head, menacing prowl",
+      "EXACT color palette match to rat-king-idle: same warm brown-gray fur tone " +
+        "(brown dominant, not cool gray), same ripped blue denim shorts, same tarnished brass " +
+        "crown with the same chipped jewels, same spiked black leather collar, same brass " +
+        "knuckles, same long pink tail."
+    ),
+  },
+  "rat-king-walk-2": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      RAT_KING_IDENTITY,
+      "heavy stomping advance, RIGHT foot forward and planted hard on the ground, left foot lifted " +
+        "behind mid-step — visibly a different frame from walk-1 so a 2-frame cycle clearly reads " +
+        "as walking, fur and muscles jiggling, brass-knuckled fists clenched, shoulders rolling, " +
+        "crown on head, menacing prowl",
+      "EXACT color palette match to rat-king-idle AND rat-king-walk-1: same warm brown-gray fur " +
+        "tone (brown dominant, not cool gray), same ripped blue denim shorts, same tarnished " +
+        "brass crown with the same chipped jewels, same spiked black leather collar, same brass " +
+        "knuckles, same long pink tail. No color flicker between walk-1 and walk-2."
+    ),
+  },
+  "rat-king-attack": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      RAT_KING_IDENTITY,
+      "mid-swing of a massive uppercut with his brass-knuckled right fist, arm fully extended and " +
+        "driving upward from his hip, body torqued hard into the punch, off-hand cocked back, " +
+        "snarling with fangs bared, crown tilted but still on head, tail whipping for balance, " +
+        "terrifying",
+      "EXACT color palette match to rat-king-idle: same warm brown-gray fur tone (brown dominant, " +
+        "not cool gray), same ripped blue denim shorts, same tarnished brass crown with chipped " +
+        "jewels, same spiked black leather collar, same brass knuckles, same long pink tail."
+    ),
+  },
+  "rat-king-hit": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      RAT_KING_IDENTITY,
+      "recoiling backward from taking a hit, head tilted and snapped back, pained grimace with " +
+        "fangs bared, one brass-knuckled paw raised to his face, other arm flailing out for balance, " +
+        "crown knocked askew but still on head, body leaning backward off-balance, tail whipping",
+      "EXACT color palette match to rat-king-idle: same warm brown-gray fur tone (brown dominant, " +
+        "not cool gray), same ripped blue denim shorts, same tarnished brass crown with chipped " +
+        "jewels, same spiked black leather collar, same brass knuckles, same long pink tail."
+    ),
+  },
+  "rat-king-defeat": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      RAT_KING_IDENTITY,
+      "defeated, dropped down on both knees, slumped forward with head hanging low, shoulders " +
+        "slack, brass-knuckled fists resting limp on the ground in front of him, the tarnished " +
+        "brass crown has fallen off his head and is lying on the ground beside him, tail limp, " +
+        "beaten and exhausted expression",
+      "EXACT color palette match to rat-king-idle: same warm brown-gray fur tone (brown dominant, " +
+        "not cool gray), same ripped blue denim shorts, same spiked black leather collar, same " +
+        "brass knuckles, same long pink tail. The fallen crown on the ground is the same " +
+        "tarnished brass with chipped jewels."
     ),
   },
 
