@@ -2,10 +2,12 @@ import Phaser from 'phaser';
 import { Player } from '../entities/Player.js';
 import { StreetRat } from '../entities/StreetRat.js';
 import { FrenchFries } from '../entities/FrenchFries.js';
+import { getStage } from '../data/stages.js';
 
-const RAT_RESPAWN_MS = 2000;
 const RAT_CONTACT_DAMAGE = 5;
 const FRIES_HEAL = 25;
+const WAVE_CLEAR_TEXT_MS = 1500;
+const WAVE_ADVANCE_DELAY_MS = 1000;
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -40,6 +42,7 @@ export class BootScene extends Phaser.Scene {
 
   create() {
     this.gameOver = false;
+    this.stageCleared = false;
 
     // Register animations. Idle / hit / rat-attack textures are handled via setTexture
     // on the entity state machines — only walks and the player-attack swing are multi-frame.
@@ -81,9 +84,11 @@ export class BootScene extends Phaser.Scene {
     // and per-character stats (hp, speed, damage, reach) from src/data/characters.js.
     this.player = new Player(this, 512, 320, this.chosenKey);
 
-    // Active rat (one at a time)
-    this.rat = null;
-    this.scheduleRatSpawn(0);
+    // Stage / wave state
+    this.stage = getStage(0);
+    this.currentWaveIndex = 0;
+    this.rats = [];
+    this.waveTransitioning = false;
 
     // Pickups (french fries)
     this.pickups = [];
@@ -105,30 +110,87 @@ export class BootScene extends Phaser.Scene {
     }).setDepth(100000);
     this.updateHpText();
 
+    // Wave counter HUD (top-right, mirrors HP text style)
+    this.waveText = this.add.text(1024 - 16, 12, '', {
+      fontFamily: 'monospace',
+      fontSize: '18px',
+      color: '#ffffff',
+    }).setOrigin(1, 0).setDepth(100000);
+    this.updateWaveText();
+
     this.gameOverText = null;
+
+    // Kick off wave 1 immediately
+    this.startWave(0);
   }
 
   updateHpText() {
     this.hpText.setText(`HP: ${this.player.hp} / ${this.player.maxHp}`);
   }
 
-  scheduleRatSpawn(delayMs) {
-    this.time.delayedCall(delayMs, () => {
-      if (this.gameOver) return;
-      this.spawnRat();
-    });
+  updateWaveText() {
+    const total = this.stage.waves.length;
+    // Display is 1-indexed. Clamp to total so it doesn't show "Wave 4 / 3"
+    // during the last-kill frame before stage-clear text appears.
+    const display = Math.min(this.currentWaveIndex + 1, total);
+    this.waveText.setText(`Wave ${display} / ${total}`);
   }
 
-  spawnRat() {
-    // Spawn at an edge of the play area, but not on top of the player
+  startWave(waveIndex) {
+    this.currentWaveIndex = waveIndex;
+    const wave = this.stage.waves[waveIndex];
+    if (!wave) return;
+
+    // 4 edge spawn points — cycle through them if wave has > 4 rats.
     const positions = [
       { x: 80, y: 200 },
       { x: 944, y: 200 },
       { x: 80, y: 440 },
       { x: 944, y: 440 },
     ];
-    const spot = Phaser.Utils.Array.GetRandom(positions);
-    this.rat = new StreetRat(this, spot.x, spot.y);
+    for (let i = 0; i < wave.rats; i++) {
+      const spot = positions[i % positions.length];
+      this.rats.push(new StreetRat(this, spot.x, spot.y));
+    }
+
+    this.waveTransitioning = false;
+    this.updateWaveText();
+  }
+
+  onWaveCleared() {
+    if (this.waveTransitioning) return;
+    this.waveTransitioning = true;
+
+    const hasMoreWaves = this.currentWaveIndex + 1 < this.stage.waves.length;
+
+    if (hasMoreWaves) {
+      const banner = this.add.text(512, 288, `Wave ${this.currentWaveIndex + 1} clear!`, {
+        fontFamily: 'monospace',
+        fontSize: '28px',
+        color: '#ffffff',
+        backgroundColor: '#000000',
+        padding: { x: 16, y: 10 },
+      }).setOrigin(0.5).setDepth(100001);
+
+      this.time.delayedCall(WAVE_CLEAR_TEXT_MS, () => {
+        if (banner && banner.scene) banner.destroy();
+      });
+      this.time.delayedCall(WAVE_ADVANCE_DELAY_MS, () => {
+        if (this.gameOver) return;
+        this.startWave(this.currentWaveIndex + 1);
+      });
+    } else {
+      this.stageCleared = true;
+      this.add.text(512, 288, 'STAGE CLEAR!', {
+        fontFamily: 'monospace',
+        fontSize: '56px',
+        color: '#ffd54a',
+        stroke: '#000000',
+        strokeThickness: 6,
+      }).setOrigin(0.5).setDepth(100001);
+      // Intentionally do NOT pause physics — player can still move around
+      // for the screenshot / victory-lap feel.
+    }
   }
 
   update() {
@@ -138,33 +200,48 @@ export class BootScene extends Phaser.Scene {
     // this.activeHitboxes directly.
     this.player.update(this.cursors, this.keys);
 
-    // Rat behavior
-    if (this.rat && this.rat.alive) {
-      this.rat.update(this.player);
+    // Rat behavior — iterate every live rat
+    for (const rat of this.rats) {
+      if (!rat.alive) continue;
+      rat.update(this.player);
 
       // Contact damage: rat overlaps player
-      if (this.player.alive && !this.player.invulnerable && this._overlap(this.rat.sprite, this.player.sprite)) {
+      if (
+        this.player.alive &&
+        !this.player.invulnerable &&
+        this._overlap(rat.sprite, this.player.sprite)
+      ) {
         this.player.takeDamage(RAT_CONTACT_DAMAGE);
         this.updateHpText();
         this.checkGameOver();
+        if (this.gameOver) return;
       }
 
-      // Attack hitboxes vs rat
+      // Attack hitboxes vs this rat. hb.hasHit stays single-target — one hitbox
+      // can only damage one enemy, so we break out of the hitbox loop as soon as
+      // one connects with this rat. Next rat in the outer loop gets its own shot
+      // at any remaining not-yet-hit hitboxes.
       for (const hb of this.activeHitboxes) {
         if (!hb || !hb.scene) continue;
         if (hb.hasHit) continue;
-        if (this._overlap(hb, this.rat.sprite)) {
+        if (this._overlap(hb, rat.sprite)) {
           hb.hasHit = true;
-          this.rat.takeDamage(this.player.damage);
-          if (!this.rat.alive) {
-            // Drop fries
-            this.pickups.push(new FrenchFries(this, this.rat.x, this.rat.y));
-            this.rat = null;
-            this.scheduleRatSpawn(RAT_RESPAWN_MS);
-            break;
+          rat.takeDamage(this.player.damage);
+          if (!rat.alive) {
+            // Drop fries at kill location
+            this.pickups.push(new FrenchFries(this, rat.x, rat.y));
           }
+          break;
         }
       }
+    }
+
+    // Remove dead rats from the active list
+    this.rats = this.rats.filter((r) => r.alive);
+
+    // Wave / stage clear check
+    if (this.rats.length === 0 && !this.waveTransitioning && !this.stageCleared) {
+      this.onWaveCleared();
     }
 
     // Prune destroyed hitboxes
@@ -185,7 +262,9 @@ export class BootScene extends Phaser.Scene {
 
     // Depth sort by y
     this.player.sprite.depth = this.player.sprite.y;
-    if (this.rat && this.rat.sprite) this.rat.sprite.depth = this.rat.sprite.y;
+    for (const r of this.rats) {
+      if (r.sprite) r.sprite.depth = r.sprite.y;
+    }
     for (const p of this.pickups) if (p.sprite) p.sprite.depth = p.sprite.y;
     for (const h of this.activeHitboxes) if (h) h.depth = h.y;
   }
