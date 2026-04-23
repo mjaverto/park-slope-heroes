@@ -4,7 +4,6 @@ import { StreetRat } from '../entities/StreetRat.js';
 import { FrenchFries } from '../entities/FrenchFries.js';
 
 const RAT_RESPAWN_MS = 2000;
-const ATTACK_DAMAGE = 15;
 const RAT_CONTACT_DAMAGE = 5;
 const FRIES_HEAL = 25;
 
@@ -14,22 +13,28 @@ export class BootScene extends Phaser.Scene {
   }
 
   preload() {
-    // Aiden (player)
-    this.load.image('aiden-idle', '/assets/sprites/aiden-idle.png');
-    this.load.image('aiden-walk-1', '/assets/sprites/aiden-walk-1.png');
-    this.load.image('aiden-walk-2', '/assets/sprites/aiden-walk-2.png');
-    this.load.image('aiden-attack-1', '/assets/sprites/aiden-attack-1.png');
-    this.load.image('aiden-attack-2', '/assets/sprites/aiden-attack-2.png');
-    this.load.image('aiden-hit', '/assets/sprites/aiden-hit.png');
+    // Which kid did the player pick in CharacterSelect? Fall back to aiden
+    // if BootScene was started directly (e.g. in dev without going through
+    // the select screen).
+    const chosenKey = this.registry.get('chosenChar') ?? 'aiden';
+    this.chosenKey = chosenKey;
 
-    // Street rat (enemy)
+    // Player: load only the chosen kid's 6 pose sprites.
+    this.load.image(`${chosenKey}-idle`, `/assets/sprites/${chosenKey}-idle.png`);
+    this.load.image(`${chosenKey}-walk-1`, `/assets/sprites/${chosenKey}-walk-1.png`);
+    this.load.image(`${chosenKey}-walk-2`, `/assets/sprites/${chosenKey}-walk-2.png`);
+    this.load.image(`${chosenKey}-attack-1`, `/assets/sprites/${chosenKey}-attack-1.png`);
+    this.load.image(`${chosenKey}-attack-2`, `/assets/sprites/${chosenKey}-attack-2.png`);
+    this.load.image(`${chosenKey}-hit`, `/assets/sprites/${chosenKey}-hit.png`);
+
+    // Street rat (enemy) — shared across all kids.
     this.load.image('rat-idle', '/assets/sprites/rat-idle.png');
     this.load.image('rat-walk-1', '/assets/sprites/rat-walk-1.png');
     this.load.image('rat-walk-2', '/assets/sprites/rat-walk-2.png');
     this.load.image('rat-attack', '/assets/sprites/rat-attack.png');
     this.load.image('rat-hit', '/assets/sprites/rat-hit.png');
 
-    // French fries (pickup)
+    // French fries (pickup) — shared.
     this.load.image('fries', '/assets/sprites/fries.png');
   }
 
@@ -37,16 +42,18 @@ export class BootScene extends Phaser.Scene {
     this.gameOver = false;
 
     // Register animations. Idle / hit / rat-attack textures are handled via setTexture
-    // on the entity state machines — only walks and the aiden-attack swing are multi-frame.
+    // on the entity state machines — only walks and the player-attack swing are multi-frame.
+    // Player anims keyed by chosenKey so each kid gets their own walk/attack cycle.
+    const k = this.chosenKey;
     this.anims.create({
-      key: 'aiden-walk',
-      frames: [{ key: 'aiden-walk-1' }, { key: 'aiden-walk-2' }],
+      key: `${k}-walk`,
+      frames: [{ key: `${k}-walk-1` }, { key: `${k}-walk-2` }],
       frameRate: 6,
       repeat: -1,
     });
     this.anims.create({
-      key: 'aiden-attack',
-      frames: [{ key: 'aiden-attack-1' }, { key: 'aiden-attack-2' }],
+      key: `${k}-attack`,
+      frames: [{ key: `${k}-attack-1` }, { key: `${k}-attack-2` }],
       frameRate: 10,
       repeat: 0,
     });
@@ -70,8 +77,9 @@ export class BootScene extends Phaser.Scene {
       color: '#cccccc',
     }).setOrigin(0.5);
 
-    // Player
-    this.player = new Player(this, 512, 320);
+    // Player — pass the chosen kid so Player pulls the right texture/anim keys
+    // and per-character stats (hp, speed, damage, reach) from src/data/characters.js.
+    this.player = new Player(this, 512, 320, this.chosenKey);
 
     // Active rat (one at a time)
     this.rat = null;
@@ -147,7 +155,7 @@ export class BootScene extends Phaser.Scene {
         if (hb.hasHit) continue;
         if (this._overlap(hb, this.rat.sprite)) {
           hb.hasHit = true;
-          this.rat.takeDamage(ATTACK_DAMAGE);
+          this.rat.takeDamage(this.player.damage);
           if (!this.rat.alive) {
             // Drop fries
             this.pickups.push(new FrenchFries(this, this.rat.x, this.rat.y));

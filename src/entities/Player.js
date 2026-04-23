@@ -1,12 +1,12 @@
 import Phaser from 'phaser';
+import { getCharacter } from '../data/characters.js';
 
-const SPEED = 200;
+// Feel constants — global across all kids, not per-character.
 const ATTACK_LIFETIME_MS = 150;
 // Katana sweep: a wide arc around the player's front half (TMNT-style), not a single point.
 // Previously 16x16 at offset 45 — that misses when the rat overlaps the player.
 const ATTACK_WIDTH = 70;
 const ATTACK_HEIGHT = 90;
-const ATTACK_OFFSET = 30;
 const INVULN_MS = 600;
 const KNOCKBACK = 300;
 const SCALE = 0.18;
@@ -14,17 +14,26 @@ const SCALE = 0.18;
 const HIT_TEXTURE_MS = 200;
 
 export class Player {
-  constructor(scene, x, y) {
+  constructor(scene, x, y, characterKey = 'aiden') {
     this.scene = scene;
-    this.maxHp = 100;
-    this.hp = 100;
+    this.characterKey = characterKey;
+
+    // Pull per-character stats from data/characters.js. getCharacter() falls
+    // back to aiden if the key is unknown.
+    const { stats } = getCharacter(characterKey);
+    this.maxHp = stats.hp;
+    this.hp = stats.hp;
+    this.speed = stats.speed;
+    this.damage = stats.damage;
+    this.reach = stats.reach; // used as ATTACK_OFFSET in attack()
+
     this.facing = 'right';
     this.invulnerable = false;
     this.attacking = false;
     this.alive = true;
     this.state = 'idle'; // idle | walking | attacking | hit
 
-    this.sprite = scene.add.sprite(x, y, 'aiden-idle');
+    this.sprite = scene.add.sprite(x, y, `${characterKey}-idle`);
     this.sprite.setOrigin(0.5, 1); // feet anchor for 2.5D depth sort
     this.sprite.setScale(SCALE);
 
@@ -45,16 +54,17 @@ export class Player {
   _setState(next) {
     if (this.state === next) return;
     this.state = next;
+    const k = this.characterKey;
     if (next === 'idle') {
       this.sprite.stop();
-      this.sprite.setTexture('aiden-idle');
+      this.sprite.setTexture(`${k}-idle`);
     } else if (next === 'walking') {
-      this.sprite.play('aiden-walk', true);
+      this.sprite.play(`${k}-walk`, true);
     } else if (next === 'attacking') {
-      this.sprite.play('aiden-attack');
+      this.sprite.play(`${k}-attack`);
     } else if (next === 'hit') {
       this.sprite.stop();
-      this.sprite.setTexture('aiden-hit');
+      this.sprite.setTexture(`${k}-hit`);
     }
   }
 
@@ -69,14 +79,14 @@ export class Player {
     let vy = 0;
 
     if (cursors.left.isDown) {
-      vx = -SPEED;
+      vx = -this.speed;
       this.facing = 'left';
     } else if (cursors.right.isDown) {
-      vx = SPEED;
+      vx = this.speed;
       this.facing = 'right';
     }
-    if (cursors.up.isDown) vy = -SPEED;
-    else if (cursors.down.isDown) vy = SPEED;
+    if (cursors.up.isDown) vy = -this.speed;
+    else if (cursors.down.isDown) vy = this.speed;
 
     // If currently knocked back, preserve velocity (knockback lasts ~100ms)
     if (!this._knockbackActive) {
@@ -105,7 +115,7 @@ export class Player {
     this._setState('attacking');
 
     const dirX = this.facing === 'left' ? -1 : 1;
-    const hx = this.sprite.x + dirX * ATTACK_OFFSET;
+    const hx = this.sprite.x + dirX * this.reach;
     // Feet-anchored sprite: hitbox centered vertically on torso.
     // Taller hitbox (90) centered around -70 covers head-to-waist.
     const hy = this.sprite.y - 70;
@@ -123,7 +133,7 @@ export class Player {
     });
 
     // Revert to idle/walking when the attack animation finishes
-    this.sprite.once('animationcomplete-aiden-attack', () => {
+    this.sprite.once(`animationcomplete-${this.characterKey}-attack`, () => {
       if (!this.alive) return;
       if (this.state === 'attacking') {
         this._setState('idle');
