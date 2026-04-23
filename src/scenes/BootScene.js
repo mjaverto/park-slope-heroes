@@ -9,6 +9,12 @@ const RAT_CONTACT_DAMAGE = 5;
 const FRIES_HEAL = 25;
 const WAVE_CLEAR_TEXT_MS = 1500;
 const WAVE_ADVANCE_DELAY_MS = 1000;
+const STARTING_LIVES = 3;
+const RAT_KILL_SCORE = 100;
+const GET_UP_TEXT_MS = 1000;
+const STAGE_CLEAR_PROMPT_DELAY_MS = 1500;
+const RESPAWN_X = 512;
+const RESPAWN_Y = 320;
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -53,6 +59,12 @@ export class BootScene extends Phaser.Scene {
 
     this.gameOver = false;
     this.stageCleared = false;
+    // Lives + score reset on every fresh BootScene entry (Retry from GameOver
+    // goes through CharacterSelect → BootScene, so this runs again).
+    this.lives = STARTING_LIVES;
+    this.score = 0;
+    this._respawning = false;
+    this._stageClearPromptShown = false;
 
     // Register animations. Idle / hit / rat-attack textures are handled via setTexture
     // on the entity state machines — only walks and the player-attack swing are multi-frame.
@@ -112,13 +124,27 @@ export class BootScene extends Phaser.Scene {
       attack: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z),
     };
 
-    // HUD
+    // HUD — HP, Lives, Score stacked top-left.
     this.hpText = this.add.text(16, 12, '', {
       fontFamily: 'monospace',
       fontSize: '18px',
       color: '#ffffff',
     }).setDepth(100000);
     this.updateHpText();
+
+    this.livesText = this.add.text(16, 36, '', {
+      fontFamily: 'monospace',
+      fontSize: '18px',
+      color: '#ffffff',
+    }).setDepth(100000);
+    this.updateLivesText();
+
+    this.scoreText = this.add.text(16, 60, '', {
+      fontFamily: 'monospace',
+      fontSize: '18px',
+      color: '#ffd54a',
+    }).setDepth(100000);
+    this.updateScoreText();
 
     // Wave counter HUD (top-right, mirrors HP text style)
     this.waveText = this.add.text(1024 - 16, 12, '', {
@@ -148,6 +174,23 @@ export class BootScene extends Phaser.Scene {
     // during the last-kill frame before stage-clear text appears.
     const display = Math.min(this.currentWaveIndex + 1, total);
     this.waveText.setText(`Wave ${display} / ${total}`);
+  }
+
+  updateLivesText() {
+    // Unicode hearts read cleanly in the monospace HUD. Fall back to a
+    // numeric suffix when lives exceed 3 (shouldn't happen today, but cheap).
+    const hearts =
+      this.lives >= 0 && this.lives <= 5 ? '❤'.repeat(this.lives) : `x${this.lives}`;
+    this.livesText.setText(`LIVES: ${hearts}`);
+  }
+
+  updateScoreText() {
+    this.scoreText.setText(`SCORE: ${this.score}`);
+  }
+
+  addScore(points) {
+    this.score += points;
+    this.updateScoreText();
   }
 
   startWave(waveIndex) {
@@ -204,7 +247,39 @@ export class BootScene extends Phaser.Scene {
       }).setOrigin(0.5).setDepth(100001);
       // Intentionally do NOT pause physics — player can still move around
       // for the screenshot / victory-lap feel.
+
+      // After a beat, surface the "Press Enter to continue" prompt and wire
+      // the key. Until Stages 2/3 exist, GameOver is the end screen.
+      this.time.delayedCall(STAGE_CLEAR_PROMPT_DELAY_MS, () => {
+        if (!this.scene.isActive() || this.gameOver) return;
+        this._stageClearPromptShown = true;
+        const prompt = this.add.text(512, 360, 'Press ENTER to continue', {
+          fontFamily: 'monospace',
+          fontSize: '20px',
+          color: '#ffffff',
+        }).setOrigin(0.5).setDepth(100001);
+        this.tweens.add({
+          targets: prompt,
+          alpha: 0.3,
+          duration: 500,
+          yoyo: true,
+          repeat: -1,
+        });
+        this.input.keyboard.once('keydown-ENTER', () => this._goToVictory());
+        this.input.keyboard.once('keydown-SPACE', () => this._goToVictory());
+      });
     }
+  }
+
+  _goToVictory() {
+    if (this.gameOver) return;
+    this.gameOver = true;
+    this.sound_mgr?.stopMusic();
+    this.scene.start('GameOver', {
+      score: this.score,
+      chosenChar: this.chosenKey,
+      victory: true,
+    });
   }
 
   update() {
@@ -244,6 +319,7 @@ export class BootScene extends Phaser.Scene {
           if (!rat.alive) {
             // Drop fries at kill location
             this.pickups.push(new FrenchFries(this, rat.x, rat.y));
+            this.addScore(RAT_KILL_SCORE);
           }
           break;
         }
@@ -284,19 +360,54 @@ export class BootScene extends Phaser.Scene {
   }
 
   checkGameOver() {
-    if (this.player.hp <= 0 && !this.gameOver) {
-      this.gameOver = true;
-      this.gameOverText = this.add.text(512, 288, 'GAME OVER — reload to retry', {
+    if (this.player.hp > 0 || this.gameOver || this._respawning) return;
+    // Player just died. Decrement lives.
+    this.lives -= 1;
+    this.updateLivesText();
+
+    if (this.lives > 0) {
+      // Respawn flow — keep the current wave state (rats stay where they are)
+      // so the "GET UP!" moment carries some weight.
+      this._respawning = true;
+      const banner = this.add.text(512, 288, 'GET UP!', {
         fontFamily: 'monospace',
-        fontSize: '28px',
-        color: '#ff6666',
-        backgroundColor: '#000000',
-        padding: { x: 16, y: 10 },
+        fontSize: '56px',
+        color: '#ffd54a',
+        stroke: '#000000',
+        strokeThickness: 6,
       }).setOrigin(0.5).setDepth(100001);
 
-      // Freeze: stop physics
-      this.physics.pause();
+      this.time.delayedCall(GET_UP_TEXT_MS, () => {
+        if (banner && banner.scene) banner.destroy();
+        this._respawnPlayer();
+        this._respawning = false;
+      });
+      return;
     }
+
+    // No lives left → GameOver
+    this.gameOver = true;
+    this.sound_mgr?.stopMusic();
+    this.scene.start('GameOver', {
+      score: this.score,
+      chosenChar: this.chosenKey,
+      victory: false,
+    });
+  }
+
+  _respawnPlayer() {
+    const p = this.player;
+    p.alive = true;
+    p.hp = p.maxHp;
+    p.invulnerable = false;
+    p.attacking = false;
+    p.state = 'idle';
+    p.sprite.setTexture(`${this.chosenKey}-idle`);
+    p.sprite.clearTint();
+    p.sprite.setAlpha(1);
+    p.sprite.setPosition(RESPAWN_X, RESPAWN_Y);
+    p.sprite.body.setVelocity(0, 0);
+    this.updateHpText();
   }
 
   _overlap(a, b) {

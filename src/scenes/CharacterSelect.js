@@ -112,6 +112,9 @@ export class CharacterSelect extends Phaser.Scene {
     this.input.keyboard.on('keydown-DOWN', () => this._move(0, 1));
     this.input.keyboard.on('keydown-ENTER', () => this._confirm());
     this.input.keyboard.on('keydown-SPACE', () => this._confirm());
+    // ESC goes back to the title. Menu music is already running; leave it
+    // playing through the transition.
+    this.input.keyboard.on('keydown-ESC', () => this.scene.start('MainMenu'));
 
     // Autoplay gate: browsers block audio until the user interacts. Start
     // menu music on the first keydown/pointerdown. _musicStarted flag keeps
