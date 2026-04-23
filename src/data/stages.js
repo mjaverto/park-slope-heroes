@@ -34,6 +34,22 @@ export const STAGES = [
       { rats: 4 },
     ],
   },
+  {
+    name: 'JJ Byrne Playground',
+    key: 'Stage2',
+    // Two rat zones + a final boss zone. Boss section uses `boss: 'rat-king'`
+    // instead of `rats: N` so the scene branches on spawn.
+    sections: [
+      { triggerX: 800, cameraLockX: 1024, rats: 3 },
+      { triggerX: 2100, cameraLockX: 2350, rats: 4 },
+      { triggerX: 3400, cameraLockX: 3650, boss: 'rat-king' },
+    ],
+    waves: [
+      { rats: 3 },
+      { rats: 4 },
+      { boss: 'rat-king' },
+    ],
+  },
 ];
 
 export function getStage(index) {
