@@ -13,8 +13,49 @@ export class BootScene extends Phaser.Scene {
     super('BootScene');
   }
 
+  preload() {
+    // Aiden (player)
+    this.load.image('aiden-idle', '/assets/sprites/aiden-idle.png');
+    this.load.image('aiden-walk-1', '/assets/sprites/aiden-walk-1.png');
+    this.load.image('aiden-walk-2', '/assets/sprites/aiden-walk-2.png');
+    this.load.image('aiden-attack-1', '/assets/sprites/aiden-attack-1.png');
+    this.load.image('aiden-attack-2', '/assets/sprites/aiden-attack-2.png');
+    this.load.image('aiden-hit', '/assets/sprites/aiden-hit.png');
+
+    // Street rat (enemy)
+    this.load.image('rat-idle', '/assets/sprites/rat-idle.png');
+    this.load.image('rat-walk-1', '/assets/sprites/rat-walk-1.png');
+    this.load.image('rat-walk-2', '/assets/sprites/rat-walk-2.png');
+    this.load.image('rat-attack', '/assets/sprites/rat-attack.png');
+    this.load.image('rat-hit', '/assets/sprites/rat-hit.png');
+
+    // French fries (pickup)
+    this.load.image('fries', '/assets/sprites/fries.png');
+  }
+
   create() {
     this.gameOver = false;
+
+    // Register animations. Idle / hit / rat-attack textures are handled via setTexture
+    // on the entity state machines — only walks and the aiden-attack swing are multi-frame.
+    this.anims.create({
+      key: 'aiden-walk',
+      frames: [{ key: 'aiden-walk-1' }, { key: 'aiden-walk-2' }],
+      frameRate: 6,
+      repeat: -1,
+    });
+    this.anims.create({
+      key: 'aiden-attack',
+      frames: [{ key: 'aiden-attack-1' }, { key: 'aiden-attack-2' }],
+      frameRate: 10,
+      repeat: 0,
+    });
+    this.anims.create({
+      key: 'rat-walk',
+      frames: [{ key: 'rat-walk-1' }, { key: 'rat-walk-2' }],
+      frameRate: 4,
+      repeat: -1,
+    });
 
     // Title
     this.add.text(512, 24, 'Park Slope Heroes', {
@@ -159,9 +200,14 @@ export class BootScene extends Phaser.Scene {
 
   _overlap(a, b) {
     if (!a || !b || !a.scene || !b.scene) return false;
-    // Rectangle game objects: use getBounds
-    const ab = a.getBounds();
-    const bb = b.getBounds();
-    return Phaser.Geom.Intersects.RectangleToRectangle(ab, bb);
+    // Prefer arcade physics body rect when present — this keeps collision tight for
+    // feet-anchored sprites whose visual getBounds() would be far larger than the body.
+    const ar = a.body
+      ? new Phaser.Geom.Rectangle(a.body.x, a.body.y, a.body.width, a.body.height)
+      : a.getBounds();
+    const br = b.body
+      ? new Phaser.Geom.Rectangle(b.body.x, b.body.y, b.body.width, b.body.height)
+      : b.getBounds();
+    return Phaser.Geom.Intersects.RectangleToRectangle(ar, br);
   }
 }

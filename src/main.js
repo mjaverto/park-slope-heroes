@@ -7,6 +7,7 @@ const config = {
   width: 1024,
   height: 576,
   backgroundColor: '#555',
+  pixelArt: true, // nearest-neighbor filtering for crisp pixel-art sprites
   physics: { default: 'arcade', arcade: { gravity: { y: 0 }, debug: false } },
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
   scene: [BootScene],
