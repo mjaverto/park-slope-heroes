@@ -79,6 +79,29 @@ const RAT_KING_IDENTITY =
   "palette, same snout shape, same posture style. 2D painterly pixel-art, 90s SNES arcade " +
   "(TMNT: Turtles in Time Konami reference). Full-body character in silhouette-friendly pose.";
 
+const COCKROACH_IDENTITY =
+  "A skittering NYC street cockroach enemy creature, dark glossy reddish-brown chitinous shell with " +
+  "a hard segmented carapace, six spindly black insect legs, two long twitching antennae, transparent " +
+  "buzzing wings folded along its back, mean glowing red compound eyes, sharp mandibles bared, " +
+  "menacing oversized roach the size of a small dog. " +
+  "2D painterly pixel-art, 90s SNES arcade (TMNT: Turtles in Time Konami reference). " +
+  "Full-body creature in silhouette-friendly pose.";
+
+const BEAKZILLA_IDENTITY =
+  "Beakzilla, a comically MUSCLE-BOUND PIGEON the size of a 13-year-old human (tall, hulking — NOT realistically pigeon-sized), " +
+  "iridescent purple-grey feathered body, BULGING BICEPS and pectorals visible through a torn yellow gym tank top that reads 'GAINS' across the chest, " +
+  "tiny pigeon head with bright orange beak and red angry eyes, scrawny pink bird legs (mismatched with the swole upper body — that's the joke), " +
+  "wearing tiny black sweatbands on each wrist, breadcrumbs scattered around his feet. " +
+  "Cartoon comic-book style, vibrant, slightly menacing but funny.";
+
+const R_TRAIN_IDENTITY =
+  "An NYC subway R train (BMT R160 model) shown in side profile, GLOSSY SILVER stainless-steel exterior with horizontal corrugated ridges, " +
+  "a bright RED CIRCULAR 'R' BADGE on the front car (large white letter R inside a red disc, classic NYC MTA roundel style), " +
+  "front cab and 2-3 passenger cars visible end-to-end, large rectangular windows along each car. " +
+  "Inside the windows you can see 4 different kids' faces pressed to the glass, smiling and waving — diverse cute children, NOT adults. " +
+  "The train is on an ELEVATED OUTDOOR TRACK (visible girders below the train in the bottom 1/4 of the image), " +
+  "Brooklyn sky behind. Cartoon comic-book style with crisp lineart, vibrant colors. NO text other than the R badge. NO platform people.";
+
 // --- Kid identity strings (locked per-character, used across all 6 poses) ----
 
 const THEO_IDENTITY =
@@ -87,11 +110,11 @@ const THEO_IDENTITY =
   "bright green zip hoodie unzipped over a white tee, khaki cargo shorts, " +
   "red high-top sneakers, holding a polished wooden bo staff.";
 
-const LYELLE_IDENTITY =
-  "A 10-year-old boy hero (NOT a muscular adult), athletic build, light skin, SHORT MESSY BLOND HAIR " +
-  "(straight and boyish, NOT long, NOT in a ponytail), bright blue eyes, bright yellow graphic t-shirt " +
-  "with a bold black star print, cuffed blue denim shorts, white canvas sneakers, " +
-  "twin silver sai daggers with red-wrapped hilts.";
+const RAFI_IDENTITY =
+  "A 10-year-old boy hero (NOT a muscular adult), MEDIUM-LENGTH BROWN HAIR in a classic boy's haircut " +
+  "(parted, ear-length, NOT long, NOT shaggy, NOT spiky), light skin, GREY zip hoodie zipped halfway, " +
+  "blue jeans, white sneakers with bright LIME GREEN socks visibly poking out at the ankles, " +
+  "carrying a wooden household broom (long tan wooden handle, straw bristles at the bottom).";
 
 const MATTHEW_IDENTITY =
   "A 10-year-old boy hero (NOT a muscular adult), compact and wiry, short spiky black hair, " +
@@ -104,10 +127,57 @@ const KATHRYN_IDENTITY =
   "lace-up boots, wielding a kusarigama: a curved black-and-silver sickle connected to a long " +
   "metal chain with a weighted end.";
 
-const RONAN_IDENTITY =
-  "A 10-year-old boy hero (NOT a muscular adult), stocky build, sandy blond buzzcut with a red " +
-  "bandana headband tied around his forehead, navy blue short-sleeve t-shirt, grey jogger sweatpants " +
-  "with elastic cuffs, black sneakers, holding a pair of black wooden tonfas (one in each hand).";
+const DEAN_IDENTITY =
+  "A 3-year-old TODDLER boy hero named Dean (NOT a 10-year-old, NOT a muscular adult — a TINY " +
+  "BLOND TODDLER roughly HALF the height of the other kids), baby-round chubby face, pale pink " +
+  "skin, wispy pale-blond toddler hair, huge curious bright-blue eyes, wearing a red-and-white " +
+  "horizontally-striped t-shirt, denim overalls with a front pocket, tiny white velcro sneakers " +
+  "with red laces, hoisting with both tiny arms a COMICALLY OVERSIZED black iron warhammer — " +
+  "the warhammer head is a massive rectangular iron block bigger than his own head, the wooden " +
+  "shaft is taller than he is, studded with brass rivets; somehow he swings it with unnatural " +
+  "toddler strength, fierce tiny-warrior determination on his baby face.";
+
+// --- Sewer Colossus: final boss (2-phase transformation, 12-pose set) -------
+// Phase 1 is the "Sewer Lord" humanoid rat-mutant villain. Phase 2 is the
+// mutated "Sewer Colossus" — same creature, way more monstrous. Both phases
+// must clearly read as the same character between transformations.
+
+const SEWER_COLOSSUS_P1_IDENTITY =
+  "A hulking humanoid rat-mutant villain known as 'The Sewer Lord', 8 feet tall, muscular but " +
+  "still bipedal and rat-shaped. Matted brown-grey fur streaked with green sewer slime, glowing " +
+  "yellow eyes, long rat snout with yellow fangs, tattered black leather trench coat over bare " +
+  "chiseled chest, thick studded leather belts, rusted steel gauntlets with claws, wrapped " +
+  "bandages around forearms, heavy boots caked in sewer muck, rat tail with iron rings threaded " +
+  "through it. Intimidating but recognizably a rat. Dripping green ooze. " +
+  "2D painterly pixel-art, 90s SNES arcade (TMNT: Turtles in Time Konami reference) final-boss " +
+  "vibe. Full-body character in silhouette-friendly pose.";
+
+const SEWER_COLOSSUS_P2_IDENTITY =
+  "The same creature from Phase 1 ('The Sewer Lord') mutated further into 'The Sewer Colossus': " +
+  "now 12 feet tall, massively thicker and more hulking, swollen green-veined muscles bursting " +
+  "through the trench coat (which is now shredded into tatters), glowing RED eyes (changed from " +
+  "yellow), extra thick black spikes protruding from shoulders and back, jaws wider with more " +
+  "fangs, a second pair of smaller clawed arms emerging from his ribs (4 arms total), skin " +
+  "visibly greener and more reptilian in patches, electrical green sewer-energy crackling around " +
+  "his fists, completely feral rage expression. Still has the matted brown-grey fur, long rat " +
+  "snout, rat tail with iron rings, heavy muck-caked boots, and studded leather belts from " +
+  "Phase 1 — CLEARLY the same character but way more monstrous. " +
+  "2D painterly pixel-art, 90s SNES arcade (TMNT: Turtles in Time Konami reference) final-boss " +
+  "vibe. Full-body character in silhouette-friendly pose.";
+
+// Palette anchor strings reused across later poses of each phase to keep the
+// fur/slime/gear colors locked against drift (same pattern as rat-king).
+const SEWER_COLOSSUS_P1_ANCHOR =
+  "EXACT color palette match to sewer-colossus-p1-idle: same matted brown-grey fur with green " +
+  "sewer slime streaks, same glowing yellow eyes, same tattered black leather trench coat, " +
+  "same rusted steel clawed gauntlets, same dirty forearm bandages, same muck-caked boots, " +
+  "same iron-ringed tail, same dripping green ooze.";
+
+const SEWER_COLOSSUS_P2_ANCHOR =
+  "EXACT color palette match to sewer-colossus-p2-idle: same greener-patched brown-grey fur with " +
+  "swollen green veins, same glowing RED eyes, same shredded remnants of the black leather " +
+  "trench coat, same black shoulder/back spikes, same crackling electrical green sewer-energy, " +
+  "same four-armed silhouette, same iron-ringed tail, same muck-caked boots.";
 
 // Build a per-pose character prompt that keeps identity locked and swaps the
 // pose description only. Optional `paletteAnchor` reinforces color consistency
@@ -128,7 +198,7 @@ const SUBJECTS = {
       "wielding twin katanas crossed in front of him, blue jeans, white sneakers, red t-shirt.",
   },
   // Legacy char-sheet entries for kids were removed in favor of per-pose
-  // entries (theo-idle, lyelle-walk-1, etc.) further down in this registry.
+  // entries (theo-idle, rafi-walk-1, etc.) further down in this registry.
   "street-rat": {
     type: "char-sheet",
     desc:
@@ -258,6 +328,132 @@ const SUBJECTS = {
       RAT_IDENTITY,
       "staggered back after taking a hit, body leaning backward off-balance, head snapped back, " +
         "arms flailing outward, eyes scrunched, spit flying from his mouth, tail whipping"
+    ),
+  },
+
+  // --- Cockroach: fast skittering enemy (5 poses) --------------------------
+  "cockroach-idle": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      COCKROACH_IDENTITY,
+      "skittering in place idle stance, low to the ground on all six legs, antennae raised and " +
+        "twitching, head turned slightly toward the camera, mandibles slightly parted, mean glowing " +
+        "red eyes"
+    ),
+  },
+  "cockroach-walk-1": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      COCKROACH_IDENTITY,
+      "mid-skitter advancing toward camera, three left-side legs pushed forward and three " +
+        "right-side legs back in the alternating tripod gait insects use, body slightly tilted into " +
+        "the motion, antennae trailing back with speed"
+    ),
+  },
+  "cockroach-walk-2": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      COCKROACH_IDENTITY,
+      "mid-skitter advancing toward camera, opposite leg phase from walk-1: three right-side legs " +
+        "forward and three left-side legs back — visibly different so a 2-frame cycle reads as " +
+        "scuttling, antennae trailing",
+      "EXACT color palette match to cockroach-walk-1: same dark glossy reddish-brown chitin, same " +
+        "transparent wing tint, same red compound eyes, same antennae color."
+    ),
+  },
+  "cockroach-attack": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      COCKROACH_IDENTITY,
+      "lunging forward at the camera with body lifted up on rear legs, front legs and antennae " +
+        "extended forward, transparent wings flared open behind, mandibles wide open and snapping, " +
+        "hostile threat pose, mean glowing red eyes locked on target"
+    ),
+  },
+  "cockroach-hit": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      COCKROACH_IDENTITY,
+      "knocked onto its back with all six legs flailing in the air, glossy underside exposed, " +
+        "antennae splayed out limp, body curled in pain, eyes scrunched"
+    ),
+  },
+
+  // --- Beakzilla: muscle-bound pigeon boss (6-pose set) -------------------
+  "beakzilla-idle": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      BEAKZILLA_IDENTITY,
+      "Standing tall on his pink bird legs, both buff arms crossed over his chest in a smug " +
+        "bodybuilder pose, head tilted slightly, beady red eye glaring at the camera, full body " +
+        "visible front-facing"
+    ),
+  },
+  "beakzilla-walk-1": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      BEAKZILLA_IDENTITY,
+      "Mid-stride walk cycle frame 1, left bird-leg planted forward, right leg lifted back, buff " +
+        "arms swinging in opposition, full body front-facing, leaning forward menacingly"
+    ),
+  },
+  "beakzilla-walk-2": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      BEAKZILLA_IDENTITY,
+      "Mid-stride walk cycle frame 2 (mirror of frame 1), right bird-leg planted forward, left " +
+        "leg lifted back, arms swinging the other way",
+      "EXACT color palette match to beakzilla-walk-1: same iridescent purple-grey feathered body, " +
+        "same torn yellow 'GAINS' gym tank top, same bright orange beak, same red angry eyes, " +
+        "same scrawny pink bird legs, same tiny black wrist sweatbands. No color flicker between " +
+        "walk-1 and walk-2."
+    ),
+  },
+  "beakzilla-attack": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      BEAKZILLA_IDENTITY,
+      "Mid-attack lunge, one buff arm cocked back about to throw a haymaker punch, beak open in " +
+        "a furious squawk, body twisted into the swing, dynamic action"
+    ),
+  },
+  "beakzilla-hit": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      BEAKZILLA_IDENTITY,
+      "Just got smacked. Body recoiling backward, buff arms flailing, eyes squeezed shut, beak " +
+        "clenched, feathers puffing out around the impact point. Painful but comedic expression"
+    ),
+  },
+  "beakzilla-defeat": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      BEAKZILLA_IDENTITY,
+      "Defeated. Lying on his back on the ground with X's for eyes, buff arms splayed out, " +
+        "tongue lolling, breadcrumbs scattered around him, the torn 'GAINS' tank top now ripped open"
+    ),
+  },
+
+  // --- R train: one-off cinematic sprite ------------------------------------
+  "r-train": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      R_TRAIN_IDENTITY,
+      "Side profile view of the full train passing across the frame, all kids waving from the " +
+        "windows with happy expressions. The train fills the horizontal width of the frame. " +
+        "Static side-on composition"
     ),
   },
 
@@ -403,59 +599,62 @@ const SUBJECTS = {
     ),
   },
 
-  // --- Lyelle: twin sai ----------------------------------------------------
-  "lyelle-idle": {
+  // --- Rafi: broom ---------------------------------------------------------
+  "rafi-idle": {
     type: "char-pose",
     size: "1024x1024",
     prompt: posePrompt(
-      LYELLE_IDENTITY,
-      "standing relaxed, weight on back foot, one sai held in each hand pointing downward at his sides, " +
-        "alert calm expression"
+      RAFI_IDENTITY,
+      "standing relaxed in a goofy taunt pose, BOTH hands raised to the sides of his head with palms " +
+        "out and fingers splayed like rabbit ears framing his face, TONGUE STUCK OUT cheekily, eyes " +
+        "squinted with a silly grin, broom tucked under one armpit so it sticks out behind him, " +
+        "weight on back foot"
     ),
   },
-  "lyelle-walk-1": {
+  "rafi-walk-1": {
     type: "char-pose",
     size: "1024x1024",
     prompt: posePrompt(
-      LYELLE_IDENTITY,
+      RAFI_IDENTITY,
       "mid-stride walking cycle, LEFT foot forward and planted, right foot lifted behind, " +
-        "both sai held in low guard in front of him, blades angled forward, focused face"
+        "broom carried over his right shoulder casually with both hands, focused face"
     ),
   },
-  "lyelle-walk-2": {
+  "rafi-walk-2": {
     type: "char-pose",
     size: "1024x1024",
     prompt: posePrompt(
-      LYELLE_IDENTITY,
+      RAFI_IDENTITY,
       "mid-stride walking cycle, RIGHT foot forward and planted, left foot lifted behind, " +
-        "both sai held in low guard in front of him, blades angled forward, focused face"
+        "broom carried over his right shoulder casually with both hands, focused face"
     ),
   },
-  "lyelle-attack-1": {
+  "rafi-attack-1": {
     type: "char-pose",
     size: "1024x1024",
     prompt: posePrompt(
-      LYELLE_IDENTITY,
-      "sai cross-strike action pose, both sai swinging inward past each other across his chest " +
-        "in an X-shape, body leaning into the strike, fierce yell"
+      RAFI_IDENTITY,
+      "broom wind-up pose, both hands gripping the wooden handle, broom raised straight overhead " +
+        "with bristles pointing up ready to strike downward, front leg braced, fierce battle yell"
     ),
   },
-  "lyelle-attack-2": {
+  "rafi-attack-2": {
     type: "char-pose",
     size: "1024x1024",
     prompt: posePrompt(
-      LYELLE_IDENTITY,
-      "sai outward thrust, both sai stabbing forward fully extended in front of him, arms " +
-        "straight out, front leg lunged forward, fierce expression"
+      RAFI_IDENTITY,
+      "broom mid-sweep horizontal slash, broom held in both hands swinging horizontally outward to " +
+        "the right with the bristled end leading, body rotated into the swing, motion implied by " +
+        "broom angle, gritted teeth"
     ),
   },
-  "lyelle-hit": {
+  "rafi-hit": {
     type: "char-pose",
     size: "1024x1024",
     prompt: posePrompt(
-      LYELLE_IDENTITY,
-      "staggered back from a hit, body leaning backward off-balance, ONE sai raised defensively " +
-        "across his face, other sai flailing outward, eyes scrunched in pain"
+      RAFI_IDENTITY,
+      "staggered back from a hit, body leaning backward off-balance, broom raised diagonally across " +
+        "his face defensively in both hands, eyes scrunched in pain"
     ),
   },
 
@@ -573,60 +772,222 @@ const SUBJECTS = {
     ),
   },
 
-  // --- Ronan: twin tonfas --------------------------------------------------
-  "ronan-idle": {
+  // --- Dean: comically oversized warhammer (3yo toddler hero) ---------------
+  "dean-idle": {
     type: "char-pose",
     size: "1024x1024",
     prompt: posePrompt(
-      RONAN_IDENTITY,
-      "standing relaxed, weight on back foot, one tonfa gripped in each hand with the long shaft " +
-        "reversed along his forearms (handle out front, shaft lying down his arm), confident stance"
+      DEAN_IDENTITY,
+      "standing braced with both tiny arms wrapped around the wooden shaft of the massive " +
+        "warhammer, the warhammer head resting on the ground next to his feet (it comes up to his " +
+        "chest), feet planted wide, small proud determined expression"
     ),
   },
-  "ronan-walk-1": {
+  "dean-walk-1": {
     type: "char-pose",
     size: "1024x1024",
     prompt: posePrompt(
-      RONAN_IDENTITY,
-      "mid-stride walking cycle, LEFT foot forward and planted, right foot lifted behind, " +
-        "tonfas held in low guard reversed along his forearms, focused face"
+      DEAN_IDENTITY,
+      "mid-stride toddling cycle, LEFT foot forward and planted, right foot lifted behind, " +
+        "dragging the huge warhammer along the ground with both hands on the shaft behind him " +
+        "because it's too heavy to carry, tongue poking out in concentration"
     ),
   },
-  "ronan-walk-2": {
+  "dean-walk-2": {
     type: "char-pose",
     size: "1024x1024",
     prompt: posePrompt(
-      RONAN_IDENTITY,
-      "mid-stride walking cycle, RIGHT foot forward and planted, left foot lifted behind, " +
-        "tonfas held in low guard reversed along his forearms, focused face"
+      DEAN_IDENTITY,
+      "mid-stride toddling cycle, RIGHT foot forward and planted, left foot lifted behind, " +
+        "dragging the huge warhammer along the ground with both hands on the shaft behind him, " +
+        "tongue poking out in concentration"
     ),
   },
-  "ronan-attack-1": {
+  "dean-attack-1": {
     type: "char-pose",
     size: "1024x1024",
     prompt: posePrompt(
-      RONAN_IDENTITY,
-      "tonfa elbow-spin strike, body rotated hard with his right elbow driving forward and the " +
-        "tonfa shaft swinging outward from his forearm like a bludgeon, other tonfa held defensively, " +
-        "fierce yell"
+      DEAN_IDENTITY,
+      "mid-swing overhead warhammer SMASH — both tiny hands gripping the shaft, the gigantic " +
+        "iron hammer head arcing down past his head toward the ground in front of him, body " +
+        "leaning into the swing, mouth open in a tiny battle cry, motion lines"
     ),
   },
-  "ronan-attack-2": {
+  "dean-attack-2": {
     type: "char-pose",
     size: "1024x1024",
     prompt: posePrompt(
-      RONAN_IDENTITY,
-      "tonfa straight punch action pose, right arm fully extended punching forward with the tonfa " +
-        "head leading the strike, left tonfa guard at his hip, front leg lunged forward, gritted teeth"
+      DEAN_IDENTITY,
+      "follow-through of a huge horizontal warhammer sweep — body fully rotated to one side, " +
+        "the oversized iron warhammer head extended out in front of him at waist height, tiny " +
+        "feet planted, fierce toddler scowl, wind-whooshing motion lines behind the hammer"
     ),
   },
-  "ronan-hit": {
+  "dean-hit": {
     type: "char-pose",
     size: "1024x1024",
     prompt: posePrompt(
-      RONAN_IDENTITY,
-      "staggered back from a hit, body leaning backward off-balance, one tonfa raised defensively " +
-        "across his face, other tonfa flailing outward, eyes scrunched in pain"
+      DEAN_IDENTITY,
+      "staggered back from a hit and knocked onto his butt, sitting on the ground with legs " +
+        "splayed, the huge warhammer tipped over beside him, big teary blue eyes scrunched, " +
+        "lower lip pouting, one tiny hand raised toward camera"
+    ),
+  },
+
+  // --- Sewer Colossus: final boss (6 Phase 1 poses + 6 Phase 2 poses) ------
+  // Generation order: each phase's idle is generated first so the palette
+  // anchor on the remaining five poses can reference it and lock colors.
+
+  // Phase 1: "The Sewer Lord" — humanoid sewer rat-mutant.
+  "sewer-colossus-p1-idle": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      SEWER_COLOSSUS_P1_IDENTITY,
+      "standing tall and imposing in a menacing idle stance, tattered trench coat hanging open, " +
+        "clawed gauntleted fists clenched at his sides, shoulders hunched forward, snarling down " +
+        "at the camera with yellow eyes glowing, ringed tail lashing behind him, green ooze " +
+        "dripping from his gauntlets"
+    ),
+  },
+  "sewer-colossus-p1-walk-1": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      SEWER_COLOSSUS_P1_IDENTITY,
+      "heavy stomping advance, LEFT muck-caked boot forward and planted hard on the ground, right " +
+        "foot lifted behind mid-step, clawed gauntleted fists clenched, trench coat flaring from " +
+        "motion, shoulders rolling aggressively, menacing prowl, ringed tail swinging behind",
+      SEWER_COLOSSUS_P1_ANCHOR
+    ),
+  },
+  "sewer-colossus-p1-walk-2": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      SEWER_COLOSSUS_P1_IDENTITY,
+      "heavy stomping advance, RIGHT muck-caked boot forward and planted hard on the ground, left " +
+        "foot lifted behind mid-step — visibly a different frame from walk-1 so a 2-frame cycle " +
+        "clearly reads as walking, clawed gauntleted fists clenched, trench coat flaring, " +
+        "shoulders rolling, menacing prowl, ringed tail swinging behind",
+      SEWER_COLOSSUS_P1_ANCHOR + " No color flicker between walk-1 and walk-2."
+    ),
+  },
+  "sewer-colossus-p1-attack": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      SEWER_COLOSSUS_P1_IDENTITY,
+      "mid-swing of a massive overhead claw strike, right arm raised high with the rusted steel " +
+        "clawed gauntlet slashing downward, trench coat flared by the motion, off-hand cocked back " +
+        "for balance, body torqued hard into the attack, fangs bared in a snarl, powerful windup " +
+        "pose",
+      SEWER_COLOSSUS_P1_ANCHOR
+    ),
+  },
+  "sewer-colossus-p1-hit": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      SEWER_COLOSSUS_P1_IDENTITY,
+      "recoiling backward from taking a hit, head snapped back, pained snarl with fangs bared, one " +
+        "clawed gauntleted arm raised defensively across his face, other arm flailing out for " +
+        "balance, body leaning backward off-balance, trench coat flared back, ringed tail whipping",
+      SEWER_COLOSSUS_P1_ANCHOR
+    ),
+  },
+  "sewer-colossus-p1-defeat": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      SEWER_COLOSSUS_P1_IDENTITY,
+      "HALF-DEFEATED but about to transform — dropped down on one knee, slumped forward slightly, " +
+        "tattered trench coat beginning to rip further across the shoulders, wisps of green energy " +
+        "starting to leak from cracks in his fur, clawed gauntleted fists planted on the ground in " +
+        "front of him, ringed tail limp, exhausted snarl with fangs bared, yellow eyes flickering. " +
+        "Smoke and green vapor rising from his shoulders — mid-transformation cliffhanger pose",
+      SEWER_COLOSSUS_P1_ANCHOR
+    ),
+  },
+
+  // Phase 2: "The Sewer Colossus" — mutated hulking colossus.
+  "sewer-colossus-p2-idle": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      SEWER_COLOSSUS_P2_IDENTITY,
+      "standing in a colossal menacing idle stance, all FOUR arms spread and flexed to show off " +
+        "his monstrous bulk, both sets of clawed fists clenched, the two upper arms raised wide " +
+        "and the two smaller lower arms tensed at his ribs, shoulders massively hunched forward " +
+        "with black spikes bristling, snarling down at the camera with red eyes blazing, " +
+        "electrical green energy crackling around all four fists, ringed tail lashing hard behind " +
+        "him, shredded trench coat hanging in strips"
+    ),
+  },
+  "sewer-colossus-p2-walk-1": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      SEWER_COLOSSUS_P2_IDENTITY,
+      "earth-shaking stomping advance, LEFT muck-caked boot forward and planted hard on the ground, " +
+        "right foot lifted behind mid-step, all four arms in motion, upper arms swinging at sides, " +
+        "smaller lower arms flexed at ribs, shredded trench coat strips flaring from motion, " +
+        "shoulders rolling aggressively with spikes bristling, feral prowl, ringed tail swinging, " +
+        "green energy arcing from fists",
+      SEWER_COLOSSUS_P2_ANCHOR
+    ),
+  },
+  "sewer-colossus-p2-walk-2": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      SEWER_COLOSSUS_P2_IDENTITY,
+      "earth-shaking stomping advance, RIGHT muck-caked boot forward and planted hard on the " +
+        "ground, left foot lifted behind mid-step — visibly a different frame from p2-walk-1 so a " +
+        "2-frame cycle clearly reads as walking, all four arms in motion, shredded coat strips " +
+        "flaring, shoulders rolling, spikes bristling, feral prowl, ringed tail swinging, green " +
+        "energy arcing from fists",
+      SEWER_COLOSSUS_P2_ANCHOR + " No color flicker between p2-walk-1 and p2-walk-2."
+    ),
+  },
+  "sewer-colossus-p2-attack": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      SEWER_COLOSSUS_P2_IDENTITY,
+      "mid-strike of a devastating four-arm haymaker combo, both upper arms swinging inward in " +
+        "massive arcs across his chest while both smaller lower arms thrust forward with claws " +
+        "extended, body rotated hard into the quad-punch, crackling green electrical energy " +
+        "explosively arcing from all four fists, fangs bared in a feral roar, red eyes blazing, " +
+        "shredded trench coat strips whipped by the motion, spikes bristling, powerful impact pose",
+      SEWER_COLOSSUS_P2_ANCHOR
+    ),
+  },
+  "sewer-colossus-p2-hit": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      SEWER_COLOSSUS_P2_IDENTITY,
+      "recoiling backward from taking a hit, head snapped back, feral pained roar with fangs fully " +
+        "bared, two arms (one upper, one lower) raised defensively across his face while the other " +
+        "two arms flail outward for balance, body leaning backward off-balance, shredded coat " +
+        "strips flared back, spikes bristling, ringed tail whipping, green energy sputtering and " +
+        "leaking from fists",
+      SEWER_COLOSSUS_P2_ANCHOR
+    ),
+  },
+  "sewer-colossus-p2-defeat": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      SEWER_COLOSSUS_P2_IDENTITY,
+      "fully defeated, collapsed onto both knees, slumped forward with massive head hanging low, " +
+        "all four shoulders slack, both upper clawed fists resting limp on the ground in front of " +
+        "him and both smaller lower arms dangling at his sides, ringed tail splayed limp behind, " +
+        "red eyes DIMMED to a faint ember glow (no longer blazing), feral rage replaced by " +
+        "exhausted beaten expression, shredded coat hanging in tatters, spikes drooping, thin " +
+        "smoke rising from his shoulders, last wisps of fading green energy curling off his fists",
+      SEWER_COLOSSUS_P2_ANCHOR + " The red eyes should be clearly DIMMED, not blazing."
     ),
   },
 
@@ -665,6 +1026,25 @@ const ALL_POSES = [
   "rat-attack",
   "rat-hit",
   "fries",
+];
+
+// Ordered list of the 12 Sewer Colossus pose subjects for --colossus.
+// Phase 1 idle generates first so its palette anchors the rest of Phase 1;
+// same for Phase 2 idle. Order also mirrors the dramatic narrative: all of
+// Phase 1, then the Phase 2 transformation sequence.
+const COLOSSUS_POSES = [
+  "sewer-colossus-p1-idle",
+  "sewer-colossus-p1-walk-1",
+  "sewer-colossus-p1-walk-2",
+  "sewer-colossus-p1-attack",
+  "sewer-colossus-p1-hit",
+  "sewer-colossus-p1-defeat",
+  "sewer-colossus-p2-idle",
+  "sewer-colossus-p2-walk-1",
+  "sewer-colossus-p2-walk-2",
+  "sewer-colossus-p2-attack",
+  "sewer-colossus-p2-hit",
+  "sewer-colossus-p2-defeat",
 ];
 
 function buildPrompt(subject) {
@@ -822,6 +1202,7 @@ async function main() {
   if (args.length === 0) {
     console.error("Usage: node tools/generate-sprites.js <subject> [<subject> ...]");
     console.error("       node tools/generate-sprites.js --all-poses");
+    console.error("       node tools/generate-sprites.js --colossus");
     console.error("Supported subjects:\n  " + Object.keys(SUBJECTS).join("\n  "));
     process.exit(1);
   }
@@ -829,6 +1210,8 @@ async function main() {
   let subjects;
   if (args.length === 1 && args[0] === "--all-poses") {
     subjects = ALL_POSES;
+  } else if (args.length === 1 && args[0] === "--colossus") {
+    subjects = COLOSSUS_POSES;
   } else {
     const unknown = args.filter((s) => !SUBJECTS[s]);
     if (unknown.length) {

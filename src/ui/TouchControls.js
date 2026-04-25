@@ -1,264 +1,278 @@
-import Phaser from 'phaser';
+// TouchControls — on-screen D-pad + attack button for iPad/touch play.
+//
+// Design: zero changes to Player.js or any scene. We detect touch devices,
+// mount a DOM overlay, and synthesize keyboard events on `window` when
+// buttons are pressed. Phaser's keyboard plugin listens on `window` by
+// default, so the existing `cursors.left.isDown` / `keys.attack` code
+// picks up our events transparently.
+//
+// Pointer events (not touch events) are used so multi-touch works and
+// pointerId tracking handles diagonals (up+right pressed together) and
+// finger-slides-off-button cleanly.
 
-/**
- * TouchControls
- * ----------------
- * Self-contained on-screen touch overlay for Phaser scenes.
- * Renders a d-pad (left) and three action buttons (right) sized for a
- * 1024x576 canvas, TMNT arcade-cabinet style.
- *
- * IMPORTANT: The consuming scene MUST call `scene.input.addPointer(3)`
- * (or higher) during its `create()` so Phaser tracks multiple simultaneous
- * touches. Without this, the d-pad thumb + action thumb cannot be pressed
- * at the same time.
- *
- * Usage:
- *   import { TouchControls } from '../ui/TouchControls.js';
- *   // In scene.create():
- *   this.input.addPointer(3);
- *   this.touch = new TouchControls(this);
- *
- *   // In scene.update():
- *   const axis = this.touch.getAxis();      // { x: -1|0|1, y: -1|0|1 }
- *   if (this.touch.isAttackDown()) { ... }
- *   if (this.touch.justPressedJump()) { ... }
- *
- * The overlay uses fixed screen positions (setScrollFactor(0)) and assumes
- * a 1024x576 design resolution. It makes no assumptions about scene scale
- * beyond that; if you use Phaser.Scale.FIT the overlay scales with the
- * rest of the canvas.
- */
-
-const DPAD_CENTER = { x: 130, y: 430 };
-const DPAD_BTN_SIZE = 70;   // radius ~35
-const DPAD_SPREAD = 70;     // distance from center to each directional button
-
-const ATTACK_POS = { x: 840, y: 430 };
-const JUMP_POS = { x: 940, y: 360 };
-const SPECIAL_POS = { x: 940, y: 480 };
-const ACTION_BTN_SIZE = 80; // radius ~40
-
-const OVERLAY_DEPTH = 10000;
-const OVERLAY_ALPHA = 0.5;
-
-const COLORS = {
-    dpadFill: 0x222222,
-    dpadOutline: 0xffffff,
-    attackFill: 0xcc2222,    // red
-    jumpFill: 0x2244cc,      // blue
-    specialFill: 0xddbb22,   // yellow
-    outline: 0xffffff,
-    glyph: '#ffffff'
+const BUTTON_MAP = {
+  up:     { key: 'ArrowUp',    code: 'ArrowUp',    keyCode: 38 },
+  down:   { key: 'ArrowDown',  code: 'ArrowDown',  keyCode: 40 },
+  left:   { key: 'ArrowLeft',  code: 'ArrowLeft',  keyCode: 37 },
+  right:  { key: 'ArrowRight', code: 'ArrowRight', keyCode: 39 },
+  attack: { key: 'z',          code: 'KeyZ',       keyCode: 90 },
 };
 
-export class TouchControls {
-    /**
-     * @param {Phaser.Scene} scene
-     */
-    constructor(scene) {
-        this.scene = scene;
-
-        // Held state (true while a pointer is on the button)
-        this._state = {
-            up: false,
-            down: false,
-            left: false,
-            right: false,
-            attack: false,
-            jump: false,
-            special: false
-        };
-
-        // Edge-triggered latches; each becomes true for exactly one frame
-        // after a fresh press, then is cleared by the postUpdate handler.
-        this._justPressed = {
-            attack: false,
-            jump: false,
-            special: false
-        };
-
-        // Container holds every visual; easier to hide/destroy as a unit.
-        this._container = scene.add.container(0, 0);
-        this._container.setDepth(OVERLAY_DEPTH);
-        this._container.setScrollFactor(0);
-
-        this._buttons = [];
-
-        this._buildDpad();
-        this._buildActionButtons();
-
-        // Clear edge-triggers at the end of every frame.
-        this._postUpdate = this._postUpdate.bind(this);
-        scene.events.on(Phaser.Scenes.Events.POST_UPDATE, this._postUpdate);
-        scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.destroy());
-        scene.events.once(Phaser.Scenes.Events.DESTROY, () => this.destroy());
-    }
-
-    // ---------- public API ----------
-
-    /**
-     * @returns {{x:number,y:number}} each component is -1, 0, or 1.
-     */
-    getAxis() {
-        const x = (this._state.right ? 1 : 0) - (this._state.left ? 1 : 0);
-        const y = (this._state.down ? 1 : 0) - (this._state.up ? 1 : 0);
-        return { x, y };
-    }
-
-    isAttackDown()  { return this._state.attack; }
-    isJumpDown()    { return this._state.jump; }
-    isSpecialDown() { return this._state.special; }
-
-    justPressedAttack()  { return this._justPressed.attack; }
-    justPressedJump()    { return this._justPressed.jump; }
-    justPressedSpecial() { return this._justPressed.special; }
-
-    /** Show or hide the entire overlay. */
-    setVisible(visible) {
-        this._container.setVisible(!!visible);
-    }
-
-    /** Remove all graphics + listeners. Safe to call more than once. */
-    destroy() {
-        if (this._destroyed) return;
-        this._destroyed = true;
-
-        if (this.scene && this.scene.events) {
-            this.scene.events.off(Phaser.Scenes.Events.POST_UPDATE, this._postUpdate);
-        }
-
-        for (const b of this._buttons) {
-            if (b.circle) b.circle.removeAllListeners();
-        }
-        this._buttons = [];
-
-        if (this._container) {
-            this._container.destroy();
-            this._container = null;
-        }
-    }
-
-    // ---------- internals ----------
-
-    _postUpdate() {
-        // Edge-triggered flags fire for exactly one frame.
-        this._justPressed.attack = false;
-        this._justPressed.jump = false;
-        this._justPressed.special = false;
-    }
-
-    _buildDpad() {
-        const { x: cx, y: cy } = DPAD_CENTER;
-        const r = DPAD_BTN_SIZE / 2;
-        const d = DPAD_SPREAD;
-
-        // up, down, left, right
-        this._makeButton({
-            x: cx,       y: cy - d,  radius: r,
-            fillColor: COLORS.dpadFill,
-            outlineColor: COLORS.dpadOutline,
-            glyph: '▲', // up-pointing triangle
-            stateKey: 'up'
-        });
-        this._makeButton({
-            x: cx,       y: cy + d,  radius: r,
-            fillColor: COLORS.dpadFill,
-            outlineColor: COLORS.dpadOutline,
-            glyph: '▼', // down-pointing triangle
-            stateKey: 'down'
-        });
-        this._makeButton({
-            x: cx - d,   y: cy,      radius: r,
-            fillColor: COLORS.dpadFill,
-            outlineColor: COLORS.dpadOutline,
-            glyph: '◀', // left-pointing triangle
-            stateKey: 'left'
-        });
-        this._makeButton({
-            x: cx + d,   y: cy,      radius: r,
-            fillColor: COLORS.dpadFill,
-            outlineColor: COLORS.dpadOutline,
-            glyph: '▶', // right-pointing triangle
-            stateKey: 'right'
-        });
-    }
-
-    _buildActionButtons() {
-        const r = ACTION_BTN_SIZE / 2;
-
-        this._makeButton({
-            x: ATTACK_POS.x,  y: ATTACK_POS.y,  radius: r,
-            fillColor: COLORS.attackFill,
-            outlineColor: COLORS.outline,
-            glyph: 'A',
-            stateKey: 'attack',
-            edgeKey: 'attack'
-        });
-        this._makeButton({
-            x: JUMP_POS.x,    y: JUMP_POS.y,    radius: r,
-            fillColor: COLORS.jumpFill,
-            outlineColor: COLORS.outline,
-            glyph: 'B',
-            stateKey: 'jump',
-            edgeKey: 'jump'
-        });
-        this._makeButton({
-            x: SPECIAL_POS.x, y: SPECIAL_POS.y, radius: r,
-            fillColor: COLORS.specialFill,
-            outlineColor: COLORS.outline,
-            glyph: 'C',
-            stateKey: 'special',
-            edgeKey: 'special'
-        });
-    }
-
-    /**
-     * Build one circular button and wire its pointer events to a state key.
-     * @private
-     */
-    _makeButton({ x, y, radius, fillColor, outlineColor, glyph, stateKey, edgeKey }) {
-        const scene = this.scene;
-
-        const circle = scene.add.circle(x, y, radius, fillColor, OVERLAY_ALPHA);
-        circle.setStrokeStyle(3, outlineColor, 1);
-        circle.setScrollFactor(0);
-        circle.setDepth(OVERLAY_DEPTH);
-
-        const label = scene.add.text(x, y, glyph, {
-            fontFamily: 'Arial, sans-serif',
-            fontSize: Math.round(radius * 0.9) + 'px',
-            color: COLORS.glyph,
-            fontStyle: 'bold'
-        }).setOrigin(0.5);
-        label.setScrollFactor(0);
-        label.setDepth(OVERLAY_DEPTH + 1);
-
-        // Hit area: make it the full circle, not just pixels.
-        circle.setInteractive(
-            new Phaser.Geom.Circle(radius, radius, radius),
-            Phaser.Geom.Circle.Contains
-        );
-
-        const press = () => {
-            const wasDown = this._state[stateKey];
-            this._state[stateKey] = true;
-            if (edgeKey && !wasDown) {
-                this._justPressed[edgeKey] = true;
-            }
-        };
-        const release = () => {
-            this._state[stateKey] = false;
-        };
-
-        circle.on('pointerdown', press);
-        circle.on('pointerup', release);
-        circle.on('pointerout', release);
-        circle.on('pointerupoutside', release);
-
-        this._container.add(circle);
-        this._container.add(label);
-        this._buttons.push({ circle, label, stateKey });
-    }
+const CSS = `
+.psh-touch-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  pointer-events: none;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  font-family: system-ui, -apple-system, sans-serif;
 }
+.psh-touch-overlay * {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+.psh-touch-dpad {
+  position: absolute;
+  left: 2.5vw;
+  bottom: 3vh;
+  display: grid;
+  grid-template-columns: repeat(3, 14vw);
+  grid-template-rows: repeat(3, 14vw);
+  gap: 0.8vw;
+  max-width: 46vw;
+}
+.psh-touch-dpad .psh-btn { max-width: 100px; max-height: 100px; }
+.psh-touch-attack {
+  position: absolute;
+  right: 4vw;
+  bottom: 6vh;
+}
+.psh-touch-attack .psh-btn {
+  width: 22vw; height: 22vw;
+  max-width: 150px; max-height: 150px;
+  border-radius: 50%;
+  font-size: 8vw;
+}
+.psh-touch-fs {
+  position: absolute;
+  top: 1vh;
+  right: 1vw;
+  pointer-events: auto;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(0,0,0,0.45);
+  color: #fff;
+  font-size: 12px;
+  border: 1px solid rgba(255,255,255,0.3);
+  opacity: 0.7;
+}
+.psh-btn {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%; height: 100%;
+  background: rgba(255,255,255,0.18);
+  border: 2px solid rgba(255,255,255,0.55);
+  color: #fff;
+  border-radius: 14px;
+  font-size: 6vw;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+  opacity: 0.55;
+  transition: background 0.05s, transform 0.05s;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.psh-btn.active {
+  background: rgba(255,230,120,0.55);
+  transform: scale(0.94);
+  opacity: 0.85;
+}
+.psh-touch-attack .psh-btn {
+  background: rgba(220,60,60,0.35);
+  border-color: rgba(255,150,150,0.8);
+}
+.psh-touch-attack .psh-btn.active {
+  background: rgba(255,120,120,0.7);
+}
+.psh-dpad-spacer { visibility: hidden; }
+`;
 
-export default TouchControls;
+export class TouchControls {
+  constructor() {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+    if (!this._isTouchDevice()) return;
+    if (document.getElementById('psh-touch-overlay-root')) return; // idempotent
+
+    // pointerId -> button name. A finger can only press one button at a
+    // time (if it slides onto another we release the old one first).
+    this._activePointers = new Map();
+    // button name -> HTMLElement. For quick lookup on pointermove.
+    this._buttons = {};
+    // Button name -> true while key is "held down" (any pointer pressing it).
+    this._held = {};
+
+    this._injectStyle();
+    this._buildOverlay();
+  }
+
+  _isTouchDevice() {
+    return ('ontouchstart' in window) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+  }
+
+  _injectStyle() {
+    if (document.getElementById('psh-touch-style')) return;
+    const style = document.createElement('style');
+    style.id = 'psh-touch-style';
+    style.textContent = CSS;
+    document.head.appendChild(style);
+  }
+
+  _buildOverlay() {
+    const root = document.createElement('div');
+    root.id = 'psh-touch-overlay-root';
+    root.className = 'psh-touch-overlay';
+
+    // D-pad: 3x3 grid, only the 4 cardinal cells hold buttons.
+    const dpad = document.createElement('div');
+    dpad.className = 'psh-touch-dpad';
+    const layout = [
+      '',     'up',   '',
+      'left', '',     'right',
+      '',     'down', '',
+    ];
+    for (const slot of layout) {
+      if (!slot) {
+        const sp = document.createElement('div');
+        sp.className = 'psh-dpad-spacer';
+        dpad.appendChild(sp);
+        continue;
+      }
+      dpad.appendChild(this._makeButton(slot, this._glyph(slot)));
+    }
+
+    const attackWrap = document.createElement('div');
+    attackWrap.className = 'psh-touch-attack';
+    attackWrap.appendChild(this._makeButton('attack', '⚔'));
+
+    // Fullscreen chip — optional. Best-effort; will no-op if unsupported.
+    const fsBtn = document.createElement('button');
+    fsBtn.type = 'button';
+    fsBtn.className = 'psh-touch-fs';
+    fsBtn.textContent = 'Fullscreen';
+    fsBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const el = document.documentElement;
+      const fn = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (fn) {
+        try { fn.call(el); } catch (_) {}
+      }
+    });
+
+    root.appendChild(dpad);
+    root.appendChild(attackWrap);
+    root.appendChild(fsBtn);
+    document.body.appendChild(root);
+
+    // Global listeners to handle pointers moving off a button while still
+    // pressed (finger slides away) and cancellations.
+    window.addEventListener('pointerup', (e) => this._onGlobalRelease(e), true);
+    window.addEventListener('pointercancel', (e) => this._onGlobalRelease(e), true);
+    window.addEventListener('pointermove', (e) => this._onGlobalMove(e), true);
+  }
+
+  _glyph(name) {
+    return { up: '▲', down: '▼', left: '◀', right: '▶' }[name] || name;
+  }
+
+  _makeButton(name, label) {
+    const btn = document.createElement('div');
+    btn.className = 'psh-btn';
+    btn.dataset.psh = name;
+    btn.textContent = label;
+    this._buttons[name] = btn;
+
+    const onDown = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // If this pointer was already pressing a different button, release it.
+      const prev = this._activePointers.get(e.pointerId);
+      if (prev && prev !== name) this._releaseButton(prev, e.pointerId);
+      this._activePointers.set(e.pointerId, name);
+      this._pressButton(name);
+      try { btn.setPointerCapture(e.pointerId); } catch (_) {}
+    };
+    btn.addEventListener('pointerdown', onDown);
+    // Prevent iOS from showing callouts / selection on long-press
+    btn.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    return btn;
+  }
+
+  _onGlobalRelease(e) {
+    const name = this._activePointers.get(e.pointerId);
+    if (!name) return;
+    this._releaseButton(name, e.pointerId);
+  }
+
+  _onGlobalMove(e) {
+    // If this pointer isn't pressing anything we track, ignore.
+    const currentName = this._activePointers.get(e.pointerId);
+    if (!currentName) return;
+    // Find which (if any) button is under the pointer.
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const hitName = (el && el.classList && el.classList.contains('psh-btn')) ? el.dataset.psh : null;
+    if (hitName === currentName) return;
+    // Slid off — release old.
+    this._releaseButton(currentName, e.pointerId);
+    // If slid onto a new button, press that.
+    if (hitName) {
+      this._activePointers.set(e.pointerId, hitName);
+      this._pressButton(hitName);
+    }
+  }
+
+  _pressButton(name) {
+    if (this._held[name]) return; // already down
+    this._held[name] = true;
+    const btn = this._buttons[name];
+    if (btn) btn.classList.add('active');
+    this._dispatchKey('keydown', BUTTON_MAP[name]);
+  }
+
+  _releaseButton(name, pointerId) {
+    if (pointerId != null) this._activePointers.delete(pointerId);
+    // If some other pointer is still holding the same button, don't release.
+    for (const v of this._activePointers.values()) {
+      if (v === name) return;
+    }
+    if (!this._held[name]) return;
+    this._held[name] = false;
+    const btn = this._buttons[name];
+    if (btn) btn.classList.remove('active');
+    this._dispatchKey('keyup', BUTTON_MAP[name]);
+  }
+
+  _dispatchKey(type, spec) {
+    if (!spec) return;
+    const ev = new KeyboardEvent(type, {
+      key: spec.key,
+      code: spec.code,
+      keyCode: spec.keyCode,
+      which: spec.keyCode,
+      bubbles: true,
+      cancelable: true,
+    });
+    // Some browsers refuse to set keyCode/which via the constructor; force them.
+    try {
+      Object.defineProperty(ev, 'keyCode', { get: () => spec.keyCode });
+      Object.defineProperty(ev, 'which',   { get: () => spec.keyCode });
+    } catch (_) {}
+    window.dispatchEvent(ev);
+  }
+}

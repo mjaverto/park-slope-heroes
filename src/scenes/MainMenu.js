@@ -18,6 +18,20 @@ export class MainMenu extends Phaser.Scene {
     // SoundManager handles all audio preload. Phaser dedupes by key so
     // re-preloading in later scenes is a no-op.
     new SoundManager(this).preload();
+
+    // Track missing title bg so create() can fall back to the plain
+    // rectangle backdrop if the PNG isn't on disk (e.g. during
+    // regeneration). Same pattern Stage2 uses for its tiles.
+    this.missingAssets = new Set();
+    this.load.on('loaderror', (file) => {
+      if (file && typeof file.key === 'string') {
+        this.missingAssets.add(file.key);
+      }
+    });
+
+    // Title hero background. Use a relative path (NOT leading-slash) so
+    // deployment-time path rewrites work correctly.
+    this.load.image('title-bg', './assets/backgrounds/title-bg.png');
   }
 
   create() {
@@ -25,8 +39,17 @@ export class MainMenu extends Phaser.Scene {
     this._musicStarted = false;
     this._confirming = false;
 
-    // Backdrop
-    this.add.rectangle(512, 288, 1024, 576, COLOR_BG).setOrigin(0.5);
+    // Backdrop — use the generated title image when available, else fall
+    // back to the plain purple rectangle.
+    if (this.textures.exists('title-bg') && !this.missingAssets?.has('title-bg')) {
+      this.add
+        .image(512, 288, 'title-bg')
+        .setOrigin(0.5)
+        .setDisplaySize(1024, 576)
+        .setDepth(-10);
+    } else {
+      this.add.rectangle(512, 288, 1024, 576, COLOR_BG).setOrigin(0.5).setDepth(-10);
+    }
 
     // Big title
     this.add

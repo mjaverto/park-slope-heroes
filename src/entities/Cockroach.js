@@ -1,15 +1,16 @@
 import Phaser from 'phaser';
 
-const SPEED = 90;
-const MAX_HP = 30;
-const SCALE = 0.18;
-const HIT_TEXTURE_MS = 150;
-const ATTACK_TEXTURE_MS = 180;
-// When the rat is within this many px of the player, switch to attack pose briefly.
-const ATTACK_DISTANCE = 70;
-const ATTACK_COOLDOWN_MS = 500;
+const SPEED = 180;
+const MAX_HP = 10;
+const SCALE = 0.10;
+const HIT_TEXTURE_MS = 120;
+const ATTACK_TEXTURE_MS = 150;
+// When the cockroach is within this many px of the player, switch to attack pose briefly.
+const ATTACK_DISTANCE = 40;
+const ATTACK_COOLDOWN_MS = 350;
+const CONTACT_DAMAGE = 3;
 
-export class StreetRat {
+export class Cockroach {
   constructor(scene, x, y) {
     this.scene = scene;
     this.maxHp = MAX_HP;
@@ -17,20 +18,20 @@ export class StreetRat {
     this.alive = true;
     this.state = 'walking'; // walking | attacking | hit
     this._nextAttackAt = 0;
-    this.contactDamage = 5;
+    this.contactDamage = CONTACT_DAMAGE;
 
-    this.sprite = scene.add.sprite(x, y, 'rat-idle');
+    this.sprite = scene.add.sprite(x, y, 'cockroach-idle');
     this.sprite.setOrigin(0.5, 1); // feet anchor
     this.sprite.setScale(SCALE);
 
     scene.physics.add.existing(this.sprite);
-    // Smaller body than player — rats are squatter
-    this.sprite.body.setSize(220, 520);
-    this.sprite.body.setOffset(1024 / 2 - 220 / 2, 1024 - 520);
+    // Smaller body tuned for the cockroach scale
+    this.sprite.body.setSize(180, 220);
+    this.sprite.body.setOffset(1024 / 2 - 180 / 2, 1024 - 220);
     this.sprite.body.setCollideWorldBounds(true);
 
-    // Start walk animation (rats are almost always moving)
-    this.sprite.play('rat-walk');
+    // Start walk animation (cockroaches are almost always moving)
+    this.sprite.play('cockroach-walk');
   }
 
   get x() { return this.sprite.x; }
@@ -40,13 +41,13 @@ export class StreetRat {
     if (this.state === next) return;
     this.state = next;
     if (next === 'walking') {
-      this.sprite.play('rat-walk', true);
+      this.sprite.play('cockroach-walk', true);
     } else if (next === 'attacking') {
       this.sprite.stop();
-      this.sprite.setTexture('rat-attack');
+      this.sprite.setTexture('cockroach-attack');
     } else if (next === 'hit') {
       this.sprite.stop();
-      this.sprite.setTexture('rat-hit');
+      this.sprite.setTexture('cockroach-hit');
     }
   }
 

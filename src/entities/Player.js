@@ -35,16 +35,22 @@ export class Player {
 
     this.sprite = scene.add.sprite(x, y, `${characterKey}-idle`);
     this.sprite.setOrigin(0.5, 1); // feet anchor for 2.5D depth sort
-    this.sprite.setScale(SCALE);
+    // Per-character display scale multiplier (Dean is a 3yo so renders smaller).
+    const scaleMul = stats.scale ?? 1;
+    this.sprite.setScale(SCALE * scaleMul);
 
     scene.physics.add.existing(this.sprite);
-    // Keep the hitbox tight for game feel — the visible sprite is big but the body is small.
-    // Arcade body size is in sprite-local px (pre-scale), so 220x680 at 0.18 => ~40x122 world px.
-    this.sprite.body.setSize(220, 680);
-    // Center the body on the sprite's feet-anchored origin:
-    // sprite is 1024x1024 local, origin (0.5, 1). We want the body centered horizontally and
-    // anchored near the feet. offset is measured from the sprite's top-left (local).
-    this.sprite.body.setOffset(1024 / 2 - 220 / 2, 1024 - 680);
+    // Tight hitbox in sprite-local px (pre-scale). We size it as a fraction of the
+    // sprite's actual texture dimensions so different source sizes work — Aiden is
+    // 1024×1024 (character ~21% wide, ~66% tall in canvas), Dean is 256×256
+    // (character trimmed to fill canvas). Same fractions land both at sensible
+    // world-px hitboxes once their per-character display scale is applied.
+    const w = this.sprite.width;
+    const h = this.sprite.height;
+    const bodyW = w * 0.215;
+    const bodyH = h * 0.664;
+    this.sprite.body.setSize(bodyW, bodyH);
+    this.sprite.body.setOffset(w / 2 - bodyW / 2, h - bodyH);
     this.sprite.body.setCollideWorldBounds(true);
   }
 

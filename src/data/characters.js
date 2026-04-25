@@ -3,14 +3,17 @@
 // and by Player/BootScene at spawn time (stats pulled by key).
 //
 // Stat design notes:
-//  - hp: max health. Ronan is tankiest; Lyelle is glassiest.
-//  - speed: movement speed px/sec. Lyelle fastest; Theo & Ronan slowest.
-//  - damage: per-attack damage. Aiden is the balanced baseline at 15.
-//  - reach: hitbox offset from the player in the facing direction, tuned
-//    to each weapon's silhouette. Kathryn's kusarigama is the longest;
-//    Lyelle's sai are stubbiest.
-// Each kid is distinct in flavor without being strictly stronger/weaker
-// than another — higher damage/reach is paid for with lower hp or speed.
+//  - hp: max health.
+//  - speed: movement speed px/sec. Rafi fastest; Theo & Dean slowest.
+//  - damage: per-attack damage. Aiden is the balanced baseline at 15;
+//    Dean is the hardest hitter (warhammer) to offset his tiny size and slow swing.
+//  - reach: hitbox offset from the player in the facing direction.
+//  - scale: optional display multiplier on top of the base sprite scale.
+//    Dean's PNGs were auto-trimmed (ImageMagick -trim + south-gravity extent)
+//    to 256×256 so the toddler figure fills the canvas with feet at the bottom.
+//    Without compensation that makes him render at ~38% of Aiden (256 vs 1024
+//    source × same SCALE). scale: 3.2 brings him to ~80% of Aiden's height,
+//    matching the "smaller toddler among 6yo kids" intent. (2.0 was ~50%.)
 
 export const CHARACTERS = [
   {
@@ -28,11 +31,11 @@ export const CHARACTERS = [
     stats: { hp: 100, speed: 190, damage: 12, reach: 50 },
   },
   {
-    key: 'lyelle',
-    name: 'Lyelle',
-    weapon: 'Twin Sai',
-    tagline: 'Fast. Close.',
-    stats: { hp: 90, speed: 230, damage: 12, reach: 22 },
+    key: 'rafi',
+    name: 'Rafi',
+    weapon: 'Broom',
+    tagline: 'Goofy. Sweeps fast.',
+    stats: { hp: 90, speed: 230, damage: 12, reach: 35 },
   },
   {
     key: 'matthew',
@@ -49,11 +52,11 @@ export const CHARACTERS = [
     stats: { hp: 95, speed: 205, damage: 13, reach: 60 },
   },
   {
-    key: 'ronan',
-    name: 'Ronan',
-    weapon: 'Tonfas',
-    tagline: 'Defensive counter.',
-    stats: { hp: 110, speed: 195, damage: 11, reach: 26 },
+    key: 'dean',
+    name: 'Dean',
+    weapon: 'Giant Warhammer',
+    tagline: 'Tiny kid. Huge hammer.',
+    stats: { hp: 100, speed: 170, damage: 22, reach: 40, scale: 3.2 },
   },
 ];
 

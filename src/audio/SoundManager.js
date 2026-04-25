@@ -8,16 +8,16 @@
 // for provenance. All files CC0 (Juhani Junkala retro packs).
 
 const SFX_ASSETS = [
-  { key: 'sfx_attack', path: '/assets/audio/sfx/swing.wav' },
-  { key: 'sfx_hit', path: '/assets/audio/sfx/hit.wav' },
-  { key: 'sfx_player_hurt', path: '/assets/audio/sfx/player-hurt.wav' },
-  { key: 'sfx_enemy_death', path: '/assets/audio/sfx/enemy-die.wav' },
-  { key: 'sfx_pickup', path: '/assets/audio/sfx/pickup.wav' },
+  { key: 'sfx_attack', path: './assets/audio/sfx/swing.wav' },
+  { key: 'sfx_hit', path: './assets/audio/sfx/hit.wav' },
+  { key: 'sfx_player_hurt', path: './assets/audio/sfx/player-hurt.wav' },
+  { key: 'sfx_enemy_death', path: './assets/audio/sfx/enemy-die.wav' },
+  { key: 'sfx_pickup', path: './assets/audio/sfx/pickup.wav' },
 ];
 
 const MUSIC_ASSETS = [
-  { key: 'music_stage1', path: '/assets/audio/music/stage1.ogg' },
-  { key: 'music_menu', path: '/assets/audio/music/title.ogg' },
+  { key: 'music_stage1', path: './assets/audio/music/stage1.ogg' },
+  { key: 'music_menu', path: './assets/audio/music/title.ogg' },
 ];
 
 const DEFAULT_SFX_VOLUME = 0.6;

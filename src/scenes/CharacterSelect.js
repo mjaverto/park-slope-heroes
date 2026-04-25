@@ -38,7 +38,7 @@ export class CharacterSelect extends Phaser.Scene {
     for (const c of CHARACTERS) {
       // Only request the idle pose for the select screen; gameplay scenes
       // handle the other poses.
-      this.load.image(`${c.key}-idle`, `/assets/sprites/${c.key}-idle.png`);
+      this.load.image(`${c.key}-idle`, `./assets/sprites/${c.key}-idle.png`);
     }
 
     // Audio — small enough to load in both scenes; Phaser dedupes by key.

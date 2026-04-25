@@ -1,12 +1,12 @@
 import Phaser from 'phaser';
 import { Player } from '../entities/Player.js';
 import { StreetRat } from '../entities/StreetRat.js';
+import { Cockroach } from '../entities/Cockroach.js';
 import { FrenchFries } from '../entities/FrenchFries.js';
 import { Boss } from '../entities/Boss.js';
 import { getStage } from '../data/stages.js';
 import { SoundManager } from '../audio/SoundManager.js';
 
-const RAT_CONTACT_DAMAGE = 5;
 const FRIES_HEAL = 25;
 const WAVE_CLEAR_TEXT_MS = 1500;
 const WAVE_ADVANCE_DELAY_MS = 1000;
@@ -54,22 +54,28 @@ export class Stage2 extends Phaser.Scene {
     this.chosenKey = chosenKey;
 
     // Player textures (same as Stage 1 — Phaser dedupes by key).
-    this.load.image(`${chosenKey}-idle`, `/assets/sprites/${chosenKey}-idle.png`);
-    this.load.image(`${chosenKey}-walk-1`, `/assets/sprites/${chosenKey}-walk-1.png`);
-    this.load.image(`${chosenKey}-walk-2`, `/assets/sprites/${chosenKey}-walk-2.png`);
-    this.load.image(`${chosenKey}-attack-1`, `/assets/sprites/${chosenKey}-attack-1.png`);
-    this.load.image(`${chosenKey}-attack-2`, `/assets/sprites/${chosenKey}-attack-2.png`);
-    this.load.image(`${chosenKey}-hit`, `/assets/sprites/${chosenKey}-hit.png`);
+    this.load.image(`${chosenKey}-idle`, `./assets/sprites/${chosenKey}-idle.png`);
+    this.load.image(`${chosenKey}-walk-1`, `./assets/sprites/${chosenKey}-walk-1.png`);
+    this.load.image(`${chosenKey}-walk-2`, `./assets/sprites/${chosenKey}-walk-2.png`);
+    this.load.image(`${chosenKey}-attack-1`, `./assets/sprites/${chosenKey}-attack-1.png`);
+    this.load.image(`${chosenKey}-attack-2`, `./assets/sprites/${chosenKey}-attack-2.png`);
+    this.load.image(`${chosenKey}-hit`, `./assets/sprites/${chosenKey}-hit.png`);
 
     // Street rat shared textures.
-    this.load.image('rat-idle', '/assets/sprites/rat-idle.png');
-    this.load.image('rat-walk-1', '/assets/sprites/rat-walk-1.png');
-    this.load.image('rat-walk-2', '/assets/sprites/rat-walk-2.png');
-    this.load.image('rat-attack', '/assets/sprites/rat-attack.png');
-    this.load.image('rat-hit', '/assets/sprites/rat-hit.png');
+    this.load.image('rat-idle', './assets/sprites/rat-idle.png');
+    this.load.image('rat-walk-1', './assets/sprites/rat-walk-1.png');
+    this.load.image('rat-walk-2', './assets/sprites/rat-walk-2.png');
+    this.load.image('rat-attack', './assets/sprites/rat-attack.png');
+    this.load.image('rat-hit', './assets/sprites/rat-hit.png');
+
+    this.load.image('cockroach-idle', './assets/sprites/cockroach-idle.png');
+    this.load.image('cockroach-walk-1', './assets/sprites/cockroach-walk-1.png');
+    this.load.image('cockroach-walk-2', './assets/sprites/cockroach-walk-2.png');
+    this.load.image('cockroach-attack', './assets/sprites/cockroach-attack.png');
+    this.load.image('cockroach-hit', './assets/sprites/cockroach-hit.png');
 
     // Fries pickup.
-    this.load.image('fries', '/assets/sprites/fries.png');
+    this.load.image('fries', './assets/sprites/fries.png');
 
     // Track missing Stage 2 assets (bg + boss sprites) so create() can fall back.
     this.missingAssets = new Set();
@@ -80,25 +86,25 @@ export class Stage2 extends Phaser.Scene {
     });
 
     // Stage 2 background tiles.
-    this.load.image('bg-stage2-tile1', '/assets/backgrounds/stage2-tile1.png');
-    this.load.image('bg-stage2-tile2', '/assets/backgrounds/stage2-tile2.png');
-    this.load.image('bg-stage2-tile3', '/assets/backgrounds/stage2-tile3.png');
+    this.load.image('bg-stage2-tile1', './assets/backgrounds/stage2-tile1.png');
+    this.load.image('bg-stage2-tile2', './assets/backgrounds/stage2-tile2.png');
+    this.load.image('bg-stage2-tile3', './assets/backgrounds/stage2-tile3.png');
 
     // Rat King boss textures — parallel agent is generating these. loaderror
     // populates missingAssets; Boss entity flips to rect fallback when any
     // texture is missing.
-    this.load.image('rat-king-idle', '/assets/sprites/rat-king-idle.png');
-    this.load.image('rat-king-walk-1', '/assets/sprites/rat-king-walk-1.png');
-    this.load.image('rat-king-walk-2', '/assets/sprites/rat-king-walk-2.png');
-    this.load.image('rat-king-attack', '/assets/sprites/rat-king-attack.png');
-    this.load.image('rat-king-hit', '/assets/sprites/rat-king-hit.png');
-    this.load.image('rat-king-defeat', '/assets/sprites/rat-king-defeat.png');
+    this.load.image('rat-king-idle', './assets/sprites/rat-king-idle.png');
+    this.load.image('rat-king-walk-1', './assets/sprites/rat-king-walk-1.png');
+    this.load.image('rat-king-walk-2', './assets/sprites/rat-king-walk-2.png');
+    this.load.image('rat-king-attack', './assets/sprites/rat-king-attack.png');
+    this.load.image('rat-king-hit', './assets/sprites/rat-king-hit.png');
+    this.load.image('rat-king-defeat', './assets/sprites/rat-king-defeat.png');
 
     // Audio — shared SFX/music keys. SoundManager's preload is idempotent on
     // Phaser's loader so calling it again is cheap. Also load music_stage2
     // which isn't in SoundManager's default music list yet.
     new SoundManager(this).preload();
-    this.load.audio('music_stage2', '/assets/audio/music/stage2.ogg');
+    this.load.audio('music_stage2', './assets/audio/music/stage2.ogg');
   }
 
   create() {
@@ -156,6 +162,12 @@ export class Stage2 extends Phaser.Scene {
       frameRate: 4,
       repeat: -1,
     });
+    this.anims.create({
+      key: 'cockroach-walk',
+      frames: [{ key: 'cockroach-walk-1' }, { key: 'cockroach-walk-2' }],
+      frameRate: 8,
+      repeat: -1,
+    });
     // Rat King walk anim — Boss.js registers its own if we didn't, but
     // pre-creating here keeps the pattern consistent with rat-walk.
     if (
@@ -180,7 +192,7 @@ export class Stage2 extends Phaser.Scene {
     this.sections = this.stage.sections ?? [];
     this.currentSectionIndex = 0;
     this.currentWaveIndex = 0;
-    this.rats = [];
+    this.enemies = [];
     this.boss = null;
     this.waveTransitioning = false;
     this.sectionActive = false;
@@ -358,27 +370,45 @@ export class Stage2 extends Phaser.Scene {
     if (section.boss) {
       this._spawnBoss(section);
     } else {
-      this._spawnSectionRats(section);
+      this._spawnSectionEnemies(section);
     }
 
     this.waveTransitioning = false;
     this.updateWaveText();
   }
 
-  _spawnSectionRats(section) {
-    const count = section.rats ?? 0;
+  _spawnSectionEnemies(section) {
     const lockX = section.cameraLockX;
     const randY = () => Phaser.Math.Between(SIDEWALK_Y_MIN, SIDEWALK_Y_MAX);
-    const behindCount = Math.max(1, Math.floor(count / 3));
-    const aheadCount = count - behindCount;
 
-    for (let i = 0; i < aheadCount; i++) {
-      const x = lockX + Phaser.Math.Between(50, 200) + i * 80;
-      this.rats.push(new StreetRat(this, x, randY()));
+    if (section.rats != null) {
+      const count = section.rats;
+      const behindCount = Math.max(1, Math.floor(count / 3));
+      const aheadCount = count - behindCount;
+      for (let i = 0; i < aheadCount; i++) {
+        const x = lockX + Phaser.Math.Between(50, 200) + i * 80;
+        this.enemies.push(new StreetRat(this, x, randY()));
+      }
+      for (let i = 0; i < behindCount; i++) {
+        const x = section.triggerX - 100 - i * 60;
+        this.enemies.push(new StreetRat(this, x, randY()));
+      }
+      return;
     }
-    for (let i = 0; i < behindCount; i++) {
-      const x = section.triggerX - 100 - i * 60;
-      this.rats.push(new StreetRat(this, x, randY()));
+
+    if (section.roaches != null) {
+      const count = section.roaches;
+      const behindCount = Math.max(1, Math.floor(count / 3));
+      const aheadCount = count - behindCount;
+      for (let i = 0; i < aheadCount; i++) {
+        const x = lockX + Phaser.Math.Between(50, 200) + i * 60;
+        this.enemies.push(new Cockroach(this, x, randY()));
+      }
+      for (let i = 0; i < behindCount; i++) {
+        const x = section.triggerX - 100 - i * 50;
+        this.enemies.push(new Cockroach(this, x, randY()));
+      }
+      return;
     }
   }
 
@@ -494,13 +524,16 @@ export class Stage2 extends Phaser.Scene {
   }
 
   _goToVictory() {
+    // Stage 2 clear now hands off to Stage 3 — the final stage — carrying
+    // score + remaining lives forward. The real victory screen only triggers
+    // after Stage 3's boss goes down.
     if (this.gameOver) return;
     this.gameOver = true;
     this.sound_mgr?.stopMusic();
-    this.scene.start('GameOver', {
+    this.scene.start('Stage3', {
       score: this.score,
+      lives: this.lives,
       chosenChar: this.chosenKey,
-      victory: true,
     });
   }
 
@@ -526,19 +559,19 @@ export class Stage2 extends Phaser.Scene {
     }
 
     // Rats loop — only for non-boss sections. Boss section has no rats.
-    for (const rat of this.rats) {
-      if (!rat.alive) continue;
-      rat.update(this.player);
+    for (const enemy of this.enemies) {
+      if (!enemy.alive) continue;
+      enemy.update(this.player);
 
-      if (rat.sprite.y < SIDEWALK_Y_MIN) rat.sprite.y = SIDEWALK_Y_MIN;
-      if (rat.sprite.y > SIDEWALK_Y_MAX) rat.sprite.y = SIDEWALK_Y_MAX;
+      if (enemy.sprite.y < SIDEWALK_Y_MIN) enemy.sprite.y = SIDEWALK_Y_MIN;
+      if (enemy.sprite.y > SIDEWALK_Y_MAX) enemy.sprite.y = SIDEWALK_Y_MAX;
 
       if (
         this.player.alive &&
         !this.player.invulnerable &&
-        this._overlap(rat.sprite, this.player.sprite)
+        this._overlap(enemy.sprite, this.player.sprite)
       ) {
-        this.player.takeDamage(RAT_CONTACT_DAMAGE);
+        this.player.takeDamage(enemy.contactDamage);
         this.updateHpText();
         this.checkGameOver();
         if (this.gameOver) return;
@@ -547,11 +580,11 @@ export class Stage2 extends Phaser.Scene {
       for (const hb of this.activeHitboxes) {
         if (!hb || !hb.scene) continue;
         if (hb.hasHit) continue;
-        if (this._overlap(hb, rat.sprite)) {
+        if (this._overlap(hb, enemy.sprite)) {
           hb.hasHit = true;
-          rat.takeDamage(this.player.damage);
-          if (!rat.alive) {
-            this.pickups.push(new FrenchFries(this, rat.x, rat.y));
+          enemy.takeDamage(this.player.damage);
+          if (!enemy.alive) {
+            this.pickups.push(new FrenchFries(this, enemy.x, enemy.y));
             this.addScore(RAT_KILL_SCORE);
           }
           break;
@@ -559,7 +592,7 @@ export class Stage2 extends Phaser.Scene {
       }
     }
 
-    this.rats = this.rats.filter((r) => r.alive);
+    this.enemies = this.enemies.filter((r) => r.alive);
 
     // Boss loop — runs in parallel with the rats loop. Boss always has its
     // own section (no rats alongside), but the pattern mirrors the rat loop.
@@ -600,7 +633,7 @@ export class Stage2 extends Phaser.Scene {
     if (
       this.sectionActive &&
       !isBossSection &&
-      this.rats.length === 0 &&
+      this.enemies.length === 0 &&
       !this.waveTransitioning &&
       !this.stageCleared
     ) {
@@ -625,7 +658,7 @@ export class Stage2 extends Phaser.Scene {
 
     // Depth sort by y
     this.player.sprite.depth = this.player.sprite.y;
-    for (const r of this.rats) {
+    for (const r of this.enemies) {
       if (r.sprite) r.sprite.depth = r.sprite.y;
     }
     if (this.boss && this.boss.sprite) {
