@@ -18,6 +18,9 @@ const BUTTON_MAP = {
   attack: { key: 'z',          code: 'KeyZ',       keyCode: 90 },
 };
 
+const DIRECTION_BUTTONS = ['up', 'down', 'left', 'right'];
+const KEY_REPEAT_MS = 250;
+
 const CSS = `
 .psh-touch-overlay {
   position: fixed;
@@ -126,6 +129,7 @@ export class TouchControls {
     this._buttons = {};
     // Button name -> true while key is "held down" (any pointer pressing it).
     this._held = {};
+    this._repeatTimer = null;
 
     this._injectStyle();
     this._buildOverlay();
@@ -237,6 +241,15 @@ export class TouchControls {
     window.addEventListener('pointerup', (e) => this._onGlobalRelease(e), true);
     window.addEventListener('pointercancel', (e) => this._onGlobalRelease(e), true);
     window.addEventListener('pointermove', (e) => this._onGlobalMove(e), true);
+    window.addEventListener('blur', () => this._releaseAllButtons());
+    window.addEventListener('pagehide', () => this._releaseAllButtons());
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) this._releaseAllButtons();
+    });
+    document.addEventListener('touchend', (e) => {
+      if (!e.touches || e.touches.length === 0) this._releaseAllButtons();
+    }, { capture: true });
+    document.addEventListener('touchcancel', () => this._releaseAllButtons(), { capture: true });
   }
 
   _glyph(name) {
@@ -256,11 +269,20 @@ export class TouchControls {
       // If this pointer was already pressing a different button, release it.
       const prev = this._activePointers.get(e.pointerId);
       if (prev && prev !== name) this._releaseButton(prev, e.pointerId);
+
+      // iOS can occasionally drop pointerup/cancel during Phaser scene changes.
+      // If this button still thinks it is held, reset it before accepting the
+      // new touch so we always dispatch a fresh keydown.
+      if (this._held[name]) this._forceReleaseButton(name);
+
       this._activePointers.set(e.pointerId, name);
       this._pressButton(name);
       try { btn.setPointerCapture(e.pointerId); } catch (_) {}
     };
     btn.addEventListener('pointerdown', onDown);
+    btn.addEventListener('pointerup', (e) => this._onGlobalRelease(e));
+    btn.addEventListener('pointercancel', (e) => this._onGlobalRelease(e));
+    btn.addEventListener('lostpointercapture', (e) => this._onGlobalRelease(e));
     // Prevent iOS from showing callouts / selection on long-press
     btn.addEventListener('contextmenu', (e) => e.preventDefault());
 
@@ -296,6 +318,7 @@ export class TouchControls {
     const btn = this._buttons[name];
     if (btn) btn.classList.add('active');
     this._dispatchKey('keydown', BUTTON_MAP[name]);
+    this._syncRepeatTimer();
   }
 
   _releaseButton(name, pointerId) {
@@ -304,11 +327,44 @@ export class TouchControls {
     for (const v of this._activePointers.values()) {
       if (v === name) return;
     }
+    this._forceReleaseButton(name);
+  }
+
+  _forceReleaseButton(name) {
+    for (const [pointerId, pointerName] of this._activePointers.entries()) {
+      if (pointerName === name) this._activePointers.delete(pointerId);
+    }
     if (!this._held[name]) return;
     this._held[name] = false;
     const btn = this._buttons[name];
     if (btn) btn.classList.remove('active');
     this._dispatchKey('keyup', BUTTON_MAP[name]);
+    this._syncRepeatTimer();
+  }
+
+  _releaseAllButtons() {
+    for (const name of Object.keys(this._held)) {
+      this._forceReleaseButton(name);
+    }
+    this._activePointers.clear();
+  }
+
+  _syncRepeatTimer() {
+    const hasHeldDirection = DIRECTION_BUTTONS.some((name) => this._held[name]);
+    if (hasHeldDirection && !this._repeatTimer) {
+      this._repeatTimer = window.setInterval(() => this._repeatHeldDirections(), KEY_REPEAT_MS);
+      return;
+    }
+    if (!hasHeldDirection && this._repeatTimer) {
+      window.clearInterval(this._repeatTimer);
+      this._repeatTimer = null;
+    }
+  }
+
+  _repeatHeldDirections() {
+    for (const name of DIRECTION_BUTTONS) {
+      if (this._held[name]) this._dispatchKey('keydown', BUTTON_MAP[name]);
+    }
   }
 
   _dispatchKey(type, spec) {
