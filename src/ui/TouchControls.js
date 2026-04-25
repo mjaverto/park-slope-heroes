@@ -35,16 +35,24 @@ const CSS = `
   -webkit-tap-highlight-color: transparent;
 }
 .psh-touch-dpad {
+  --psh-dpad-btn: clamp(56px, 8.25vw, 78px);
+  --psh-dpad-step: calc(var(--psh-dpad-btn) * 0.72);
   position: absolute;
-  left: 2.5vw;
-  bottom: 3vh;
-  display: grid;
-  grid-template-columns: repeat(3, 14vw);
-  grid-template-rows: repeat(3, 14vw);
-  gap: 0.8vw;
-  max-width: 46vw;
+  left: max(12px, 2.5vw);
+  bottom: max(12px, 3vh);
+  width: calc(var(--psh-dpad-btn) + var(--psh-dpad-step) * 2);
+  height: calc(var(--psh-dpad-btn) + var(--psh-dpad-step) * 2);
 }
-.psh-touch-dpad .psh-btn { max-width: 100px; max-height: 100px; }
+.psh-touch-dpad .psh-btn {
+  position: absolute;
+  width: var(--psh-dpad-btn);
+  height: var(--psh-dpad-btn);
+  font-size: clamp(30px, 5vw, 44px);
+}
+.psh-touch-dpad .psh-btn[data-psh="up"] { left: var(--psh-dpad-step); top: 0; }
+.psh-touch-dpad .psh-btn[data-psh="left"] { left: 0; top: var(--psh-dpad-step); }
+.psh-touch-dpad .psh-btn[data-psh="right"] { right: 0; top: var(--psh-dpad-step); }
+.psh-touch-dpad .psh-btn[data-psh="down"] { left: var(--psh-dpad-step); bottom: 0; }
 .psh-touch-attack {
   position: absolute;
   right: 4vw;
@@ -79,7 +87,7 @@ const CSS = `
   border: 2px solid rgba(255,255,255,0.55);
   color: #fff;
   border-radius: 14px;
-  font-size: 6vw;
+  font-size: clamp(28px, 6vw, 54px);
   font-weight: 700;
   text-shadow: 0 1px 2px rgba(0,0,0,0.6);
   opacity: 0.55;
@@ -100,13 +108,14 @@ const CSS = `
 .psh-touch-attack .psh-btn.active {
   background: rgba(255,120,120,0.7);
 }
-.psh-dpad-spacer { visibility: hidden; }
+.psh-dpad-spacer { display: none; }
 `;
 
 export class TouchControls {
   constructor() {
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
     if (!this._isTouchDevice()) return;
+    this._installZoomGuard();
     if (document.getElementById('psh-touch-overlay-root')) return; // idempotent
 
     // pointerId -> button name. A finger can only press one button at a
@@ -123,6 +132,38 @@ export class TouchControls {
 
   _isTouchDevice() {
     return ('ontouchstart' in window) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+  }
+
+  _installZoomGuard() {
+    if (window.__pshZoomGuardInstalled) return;
+    window.__pshZoomGuardInstalled = true;
+
+    const prevent = (e) => e.preventDefault();
+
+    // iOS Safari gesture events cover pinch zoom. The touchmove fallback
+    // covers Chromium/Android multi-touch and older WebKit builds.
+    for (const type of ['gesturestart', 'gesturechange', 'gestureend']) {
+      document.addEventListener(type, prevent, { passive: false, capture: true });
+    }
+    document.addEventListener(
+      'touchmove',
+      (e) => {
+        if (e.touches && e.touches.length > 1) e.preventDefault();
+      },
+      { passive: false, capture: true }
+    );
+
+    // Suppress double-tap zoom without blocking normal single-tap controls.
+    let lastTouchEnd = 0;
+    document.addEventListener(
+      'touchend',
+      (e) => {
+        const now = Date.now();
+        if (now - lastTouchEnd <= 350) e.preventDefault();
+        lastTouchEnd = now;
+      },
+      { passive: false, capture: true }
+    );
   }
 
   _injectStyle() {

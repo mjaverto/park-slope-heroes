@@ -102,7 +102,7 @@ const R_TRAIN_IDENTITY =
   "The train is on an ELEVATED OUTDOOR TRACK (visible girders below the train in the bottom 1/4 of the image), " +
   "Brooklyn sky behind. Cartoon comic-book style with crisp lineart, vibrant colors. NO text other than the R badge. NO platform people.";
 
-// --- Kid identity strings (locked per-character, used across all 6 poses) ----
+// --- Kid identity strings (locked per-character, used across all poses) ----
 
 const THEO_IDENTITY =
   "A 10-year-old African American boy hero (NOT a muscular adult), tall and lanky, dark brown skin, " +
@@ -115,6 +115,12 @@ const RAFI_IDENTITY =
   "(parted, ear-length, NOT long, NOT shaggy, NOT spiky), light skin, GREY zip hoodie zipped halfway, " +
   "blue jeans, white sneakers with bright LIME GREEN socks visibly poking out at the ankles, " +
   "carrying a wooden household broom (long tan wooden handle, straw bristles at the bottom).";
+
+const LYELLE_IDENTITY =
+  "A 10-year-old boy hero (NOT a muscular adult), athletic build, light skin, SHORT MESSY BLOND HAIR " +
+  "(straight and boyish, NOT long, NOT in a ponytail), bright blue eyes, bright yellow graphic t-shirt " +
+  "with a bold black star print, cuffed blue denim shorts, white canvas sneakers, " +
+  "twin silver sai daggers with red-wrapped hilts.";
 
 const MATTHEW_IDENTITY =
   "A 10-year-old boy hero (NOT a muscular adult), compact and wiry, short spiky black hair, " +
@@ -198,7 +204,7 @@ const SUBJECTS = {
       "wielding twin katanas crossed in front of him, blue jeans, white sneakers, red t-shirt.",
   },
   // Legacy char-sheet entries for kids were removed in favor of per-pose
-  // entries (theo-idle, rafi-walk-1, etc.) further down in this registry.
+  // entries (theo-idle, lyelle-walk-1, etc.) further down in this registry.
   "street-rat": {
     type: "char-sheet",
     desc:
@@ -655,6 +661,62 @@ const SUBJECTS = {
       RAFI_IDENTITY,
       "staggered back from a hit, body leaning backward off-balance, broom raised diagonally across " +
         "his face defensively in both hands, eyes scrunched in pain"
+    ),
+  },
+
+  // --- Lyelle: twin sai ----------------------------------------------------
+  "lyelle-idle": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      LYELLE_IDENTITY,
+      "standing relaxed, weight on back foot, one sai held in each hand pointing downward at his sides, " +
+        "alert calm expression"
+    ),
+  },
+  "lyelle-walk-1": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      LYELLE_IDENTITY,
+      "mid-stride walking cycle, LEFT foot forward and planted, right foot lifted behind, " +
+        "both sai held in low guard in front of him, blades angled forward, focused face"
+    ),
+  },
+  "lyelle-walk-2": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      LYELLE_IDENTITY,
+      "mid-stride walking cycle, RIGHT foot forward and planted, left foot lifted behind, " +
+        "both sai held in low guard in front of him, blades angled forward, focused face"
+    ),
+  },
+  "lyelle-attack-1": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      LYELLE_IDENTITY,
+      "sai cross-strike action pose, both sai swinging inward past each other across his chest " +
+        "in an X-shape, body leaning into the strike, fierce yell"
+    ),
+  },
+  "lyelle-attack-2": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      LYELLE_IDENTITY,
+      "sai outward thrust, both sai stabbing forward fully extended in front of him, arms " +
+        "straight out, front leg lunged forward, fierce expression"
+    ),
+  },
+  "lyelle-hit": {
+    type: "char-pose",
+    size: "1024x1024",
+    prompt: posePrompt(
+      LYELLE_IDENTITY,
+      "staggered back from a hit, body leaning backward off-balance, ONE sai raised defensively " +
+        "across his face, other sai flailing outward, eyes scrunched in pain"
     ),
   },
 

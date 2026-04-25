@@ -2,16 +2,16 @@ import Phaser from 'phaser';
 import { CHARACTERS } from '../data/characters.js';
 import { SoundManager } from '../audio/SoundManager.js';
 
-// Grid: 3 cols x 2 rows of 260x200 cards, 20px gap, centered in 1024x576.
-const CARD_W = 260;
-const CARD_H = 200;
-const GAP = 20;
-const COLS = 3;
-const ROWS = 2;
-const GRID_W = COLS * CARD_W + (COLS - 1) * GAP; // 820
-const GRID_H = ROWS * CARD_H + (ROWS - 1) * GAP; // 420
-const GRID_X = Math.round((1024 - GRID_W) / 2); // 102
-const GRID_Y = 120; // leaves ~80px for title, ~36px breathing room below
+// Grid: up to 4 cols, centered in 1024x576. Supports the growing hero roster.
+const CARD_W = 220;
+const CARD_H = 185;
+const GAP = 18;
+const COLS = 4;
+const ROWS = Math.ceil(CHARACTERS.length / COLS);
+const GRID_W = COLS * CARD_W + (COLS - 1) * GAP;
+const GRID_H = ROWS * CARD_H + (ROWS - 1) * GAP;
+const GRID_X = Math.round((1024 - GRID_W) / 2);
+const GRID_Y = 118;
 
 // Colors (TMNT-evocative: purple-on-black with cyan highlights).
 const COLOR_BG = 0x0f0a1a;
@@ -73,7 +73,7 @@ export class CharacterSelect extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    // Build the 3x2 card grid.
+    // Build the card grid.
     CHARACTERS.forEach((char, i) => {
       const col = i % COLS;
       const row = Math.floor(i / COLS);
@@ -144,7 +144,7 @@ export class CharacterSelect extends Phaser.Scene {
       portrait = this.add.image(0, portraitY, portraitKey);
       // Fit portrait into a ~120x120 box preserving aspect ratio.
       const src = portrait;
-      const maxDim = 120;
+      const maxDim = 105;
       const scale = Math.min(maxDim / src.width, maxDim / src.height, 2);
       portrait.setScale(scale);
     } else {
@@ -163,14 +163,14 @@ export class CharacterSelect extends Phaser.Scene {
     const nameText = this.add
       .text(0, CARD_H / 2 - 60, char.name, {
         fontFamily: 'monospace',
-        fontSize: '20px',
+        fontSize: '19px',
         color: COLOR_TEXT,
       })
       .setOrigin(0.5);
     const weaponText = this.add
       .text(0, CARD_H / 2 - 38, char.weapon, {
         fontFamily: 'monospace',
-        fontSize: '13px',
+        fontSize: '12px',
         color: COLOR_WEAPON,
       })
       .setOrigin(0.5);

@@ -1,12 +1,13 @@
 // src/data/characters.js
-// Source of truth for the 6 playable kids. Consumed by CharacterSelect
+// Source of truth for the playable kids. Consumed by CharacterSelect
 // and by Player/BootScene at spawn time (stats pulled by key).
 //
 // Stat design notes:
 //  - hp: max health.
-//  - speed: movement speed px/sec. Rafi fastest; Theo & Dean slowest.
+//  - speed: movement speed px/sec. Rafi and Lyelle are fastest; Theo & Dean slowest.
 //  - damage: per-attack damage. Aiden is the balanced baseline at 15;
-//    Dean is the hardest hitter (warhammer) to offset his tiny size and slow swing.
+//    Dean is the hardest hitter (warhammer) to offset his tiny size and slow swing;
+//    Lyelle trades reach for speed.
 //  - reach: hitbox offset from the player in the facing direction.
 //  - scale: optional display multiplier on top of the base sprite scale.
 //    Dean's PNGs were auto-trimmed (ImageMagick -trim + south-gravity extent)
@@ -36,6 +37,13 @@ export const CHARACTERS = [
     weapon: 'Broom',
     tagline: 'Goofy. Sweeps fast.',
     stats: { hp: 90, speed: 230, damage: 12, reach: 35 },
+  },
+  {
+    key: 'lyelle',
+    name: 'Lyelle',
+    weapon: 'Twin Sai',
+    tagline: 'Fast. Close.',
+    stats: { hp: 90, speed: 230, damage: 12, reach: 22 },
   },
   {
     key: 'matthew',
