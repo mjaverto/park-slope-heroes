@@ -36,7 +36,7 @@ const CSS = `
 }
 .psh-touch-dpad {
   --psh-dpad-btn: clamp(56px, 8.25vw, 78px);
-  --psh-dpad-step: calc(var(--psh-dpad-btn) * 0.72);
+  --psh-dpad-step: calc(var(--psh-dpad-btn) * 0.83);
   position: absolute;
   left: max(12px, 2.5vw);
   bottom: max(12px, 3vh);
@@ -64,10 +64,9 @@ const CSS = `
   border-radius: 50%;
   font-size: 8vw;
 }
-.psh-touch-fs {
+.psh-touch-chip {
   position: absolute;
-  top: 1vh;
-  right: 1vw;
+  top: max(6px, env(safe-area-inset-top));
   pointer-events: auto;
   padding: 6px 10px;
   border-radius: 6px;
@@ -77,6 +76,8 @@ const CSS = `
   border: 1px solid rgba(255,255,255,0.3);
   opacity: 0.7;
 }
+.psh-touch-reset { left: max(6px, env(safe-area-inset-left)); }
+.psh-touch-fs { right: max(6px, env(safe-area-inset-right)); }
 .psh-btn {
   pointer-events: auto;
   display: flex;
@@ -179,7 +180,7 @@ export class TouchControls {
     root.id = 'psh-touch-overlay-root';
     root.className = 'psh-touch-overlay';
 
-    // D-pad: 3x3 grid, only the 4 cardinal cells hold buttons.
+    // D-pad: four absolute buttons around a tight center gap.
     const dpad = document.createElement('div');
     dpad.className = 'psh-touch-dpad';
     const layout = [
@@ -201,10 +202,20 @@ export class TouchControls {
     attackWrap.className = 'psh-touch-attack';
     attackWrap.appendChild(this._makeButton('attack', '⚔'));
 
+    const resetBtn = document.createElement('button');
+    resetBtn.type = 'button';
+    resetBtn.className = 'psh-touch-chip psh-touch-reset';
+    resetBtn.textContent = 'Reset';
+    resetBtn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      window.location.reload();
+    });
+
     // Fullscreen chip — optional. Best-effort; will no-op if unsupported.
     const fsBtn = document.createElement('button');
     fsBtn.type = 'button';
-    fsBtn.className = 'psh-touch-fs';
+    fsBtn.className = 'psh-touch-chip psh-touch-fs';
     fsBtn.textContent = 'Fullscreen';
     fsBtn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -217,6 +228,7 @@ export class TouchControls {
 
     root.appendChild(dpad);
     root.appendChild(attackWrap);
+    root.appendChild(resetBtn);
     root.appendChild(fsBtn);
     document.body.appendChild(root);
 
