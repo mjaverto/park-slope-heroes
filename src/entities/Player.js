@@ -3,10 +3,13 @@ import { getCharacter } from '../data/characters.js';
 
 // Feel constants — global across all kids, not per-character.
 const ATTACK_LIFETIME_MS = 150;
-// Katana sweep: a wide arc around the player's front half (TMNT-style), not a single point.
-// Previously 16x16 at offset 45 — that misses when the rat overlaps the player.
-const ATTACK_WIDTH = 70;
-const ATTACK_HEIGHT = 90;
+// Weapon sweep: overlap the player's body and extend through the front half.
+// This prevents tiny/low enemies (cockroaches) from getting stuck inside the
+// player where a pure forward-only torso hitbox can't reach them.
+const ATTACK_MIN_WIDTH = 96;
+const ATTACK_FRONT_PADDING = 72;
+const ATTACK_HEIGHT = 150;
+const ATTACK_CENTER_Y_OFFSET = -45;
 const INVULN_MS = 600;
 const KNOCKBACK = 300;
 const SCALE = 0.18;
@@ -122,11 +125,12 @@ export class Player {
     this.scene.sound_mgr?.playSfx('sfx_attack');
 
     const dirX = this.facing === 'left' ? -1 : 1;
-    const hx = this.sprite.x + dirX * this.reach;
-    // Feet-anchored sprite: hitbox centered vertically on torso.
-    // Taller hitbox (90) centered around -70 covers head-to-waist.
-    const hy = this.sprite.y - 70;
-    const hitbox = this.scene.add.rectangle(hx, hy, ATTACK_WIDTH, ATTACK_HEIGHT, 0xffffff, 0);
+    const width = Math.max(ATTACK_MIN_WIDTH, this.reach + ATTACK_FRONT_PADDING);
+    const hx = this.sprite.x + dirX * (this.reach / 2);
+    // Feet-anchored sprite: cover torso through feet. Roaches are short and
+    // often overlap the player's lower body, so the sweep must reach down.
+    const hy = this.sprite.y + ATTACK_CENTER_Y_OFFSET;
+    const hitbox = this.scene.add.rectangle(hx, hy, width, ATTACK_HEIGHT, 0xffffff, 0);
     hitbox.visible = false; // invisible — no debug box in real gameplay
     this.scene.physics.add.existing(hitbox);
     hitbox.body.setAllowGravity(false);

@@ -9,6 +9,9 @@ const ATTACK_TEXTURE_MS = 150;
 const ATTACK_DISTANCE = 40;
 const ATTACK_COOLDOWN_MS = 350;
 const CONTACT_DAMAGE = 3;
+// Don't let roaches sit directly under the player's feet. If they overlap too
+// deeply, back them out so the player can read and hit them.
+const MIN_PLAYER_SEPARATION = 28;
 
 export class Cockroach {
   constructor(scene, x, y) {
@@ -59,7 +62,9 @@ export class Cockroach {
     const dx = playerRef.x - this.sprite.x;
     const dy = playerRef.y - this.sprite.y;
     const len = Math.hypot(dx, dy) || 1;
-    this.sprite.body.setVelocity((dx / len) * SPEED, (dy / len) * SPEED);
+    const direction = len < MIN_PLAYER_SEPARATION ? -1 : 1;
+    const speed = len < MIN_PLAYER_SEPARATION ? SPEED * 0.8 : SPEED;
+    this.sprite.body.setVelocity((dx / len) * speed * direction, (dy / len) * speed * direction);
 
     // Face player horizontally
     if (dx < -1) this.sprite.setFlipX(true);
