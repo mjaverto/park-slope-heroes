@@ -6,6 +6,7 @@ import { FrenchFries } from '../entities/FrenchFries.js';
 import { Boss } from '../entities/Boss.js';
 import { getStage } from '../data/stages.js';
 import { SoundManager } from '../audio/SoundManager.js';
+import { sealFinalSection, showStageTransition } from '../utils/stageTransition.js';
 
 const FRIES_HEAL = 25;
 const WAVE_CLEAR_TEXT_MS = 1500;
@@ -14,7 +15,6 @@ const STARTING_LIVES = 3;
 const RAT_KILL_SCORE = 100;
 const BOSS_KILL_SCORE = 1000;
 const GET_UP_TEXT_MS = 1000;
-const STAGE_CLEAR_PROMPT_DELAY_MS = 1500;
 const BOSS_DEFEAT_DELAY_MS = 2000;
 
 // Mirrors BootScene's world geometry — Stage 2 re-uses the same 3-tile layout
@@ -451,7 +451,8 @@ export class Stage2 extends Phaser.Scene {
     const nextIndex = this.currentSectionIndex + 1;
     if (nextIndex >= this.sections.length) {
       // Shouldn't happen in Stage 2 — boss section is last and uses its own
-      // clear flow. Guard anyway.
+      // clear flow. Guard anyway. Seal to avoid final-trigger respawns.
+      sealFinalSection(this);
       this.time.delayedCall(WAVE_ADVANCE_DELAY_MS, () => {
         if (this.gameOver) return;
         this._onStageCleared();
@@ -494,34 +495,14 @@ export class Stage2 extends Phaser.Scene {
   }
 
   _onStageCleared() {
-    this.stageCleared = true;
-    this.add.text(512, 288, 'STAGE CLEAR!', {
-      fontFamily: 'monospace',
-      fontSize: '56px',
-      color: '#ffd54a',
-      stroke: '#000000',
-      strokeThickness: 6,
-    }).setOrigin(0.5).setDepth(100001).setScrollFactor(0);
-
-    this.time.delayedCall(STAGE_CLEAR_PROMPT_DELAY_MS, () => {
-      if (!this.scene.isActive() || this.gameOver) return;
-      this._stageClearPromptShown = true;
-      const prompt = this.add.text(512, 360, 'Press ENTER to continue', {
-        fontFamily: 'monospace',
-        fontSize: '20px',
-        color: '#ffffff',
-      }).setOrigin(0.5).setDepth(100001).setScrollFactor(0);
-      this.tweens.add({
-        targets: prompt,
-        alpha: 0.3,
-        duration: 500,
-        yoyo: true,
-        repeat: -1,
-      });
-      this.input.keyboard.once('keydown-ENTER', () => this._goToVictory());
-      this.input.keyboard.once('keydown-SPACE', () => this._goToVictory());
+    showStageTransition(this, {
+      title: 'STAGE 2 CLEAR!',
+      subtitle: 'The playground is back under control.',
+      nextLabel: 'Next: Stage 3 — Grand Army Plaza',
+      onComplete: () => this._goToVictory(),
     });
   }
+
 
   _goToVictory() {
     // Stage 2 clear now hands off to Stage 3 — the final stage — carrying
@@ -538,7 +519,7 @@ export class Stage2 extends Phaser.Scene {
   }
 
   update() {
-    if (this.gameOver) return;
+    if (this.gameOver || this.stageCleared) return;
 
     this.player.update(this.cursors, this.keys);
 

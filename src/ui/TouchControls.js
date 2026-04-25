@@ -36,7 +36,7 @@ const CSS = `
 }
 .psh-touch-dpad {
   --psh-dpad-btn: clamp(56px, 8.25vw, 78px);
-  --psh-dpad-step: calc(var(--psh-dpad-btn) * 0.83);
+  --psh-dpad-step: calc(var(--psh-dpad-btn) * 0.91);
   position: absolute;
   left: max(12px, 2.5vw);
   bottom: max(12px, 3vh);

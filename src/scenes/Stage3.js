@@ -6,6 +6,7 @@ import { FrenchFries } from '../entities/FrenchFries.js';
 import { SewerColossus } from '../entities/SewerColossus.js';
 import { getStage } from '../data/stages.js';
 import { SoundManager } from '../audio/SoundManager.js';
+import { sealFinalSection, showStageTransition } from '../utils/stageTransition.js';
 
 const FRIES_HEAL = 25;
 const WAVE_CLEAR_TEXT_MS = 1500;
@@ -14,7 +15,6 @@ const STARTING_LIVES = 3;
 const RAT_KILL_SCORE = 100;
 const BOSS_KILL_SCORE = 2000;
 const GET_UP_TEXT_MS = 1000;
-const STAGE_CLEAR_PROMPT_DELAY_MS = 1500;
 const BOSS_DEFEAT_DELAY_MS = 2500;
 
 // Same 3-tile world geometry as Stage 1/2.
@@ -456,6 +456,8 @@ export class Stage3 extends Phaser.Scene {
 
     const nextIndex = this.currentSectionIndex + 1;
     if (nextIndex >= this.sections.length) {
+      // Seal final trigger immediately so the cleared zone cannot respawn enemies.
+      sealFinalSection(this);
       this.time.delayedCall(WAVE_ADVANCE_DELAY_MS, () => {
         if (this.gameOver) return;
         this._onStageCleared();
@@ -493,43 +495,14 @@ export class Stage3 extends Phaser.Scene {
   }
 
   _onStageCleared() {
-    this.stageCleared = true;
-    // Final stage — use FINAL VICTORY styling.
-    this.add.text(512, 260, 'Stage 3 Clear!', {
-      fontFamily: 'monospace',
-      fontSize: '56px',
-      color: '#ffffff',
-      stroke: '#000000',
-      strokeThickness: 6,
-    }).setOrigin(0.5).setDepth(100001).setScrollFactor(0);
-
-    this.add.text(512, 320, 'Beakzilla is calling you out at 4th Ave...', {
-      fontFamily: 'monospace',
-      fontSize: '20px',
-      color: '#ffffff',
-      stroke: '#000000',
-      strokeThickness: 3,
-    }).setOrigin(0.5).setDepth(100001).setScrollFactor(0);
-
-    this.time.delayedCall(STAGE_CLEAR_PROMPT_DELAY_MS, () => {
-      if (!this.scene.isActive() || this.gameOver) return;
-      this._stageClearPromptShown = true;
-      const prompt = this.add.text(512, 380, 'Press ENTER to continue', {
-        fontFamily: 'monospace',
-        fontSize: '20px',
-        color: '#ffffff',
-      }).setOrigin(0.5).setDepth(100001).setScrollFactor(0);
-      this.tweens.add({
-        targets: prompt,
-        alpha: 0.3,
-        duration: 500,
-        yoyo: true,
-        repeat: -1,
-      });
-      this.input.keyboard.once('keydown-ENTER', () => this._goToNextStage());
-      this.input.keyboard.once('keydown-SPACE', () => this._goToNextStage());
+    showStageTransition(this, {
+      title: 'STAGE 3 CLEAR!',
+      subtitle: 'The Sewer Colossus is down.',
+      nextLabel: 'Next: Stage 4 — 4th Ave & 9th St',
+      onComplete: () => this._goToNextStage(),
     });
   }
+
 
   _goToNextStage() {
     if (this.gameOver) return;
@@ -542,7 +515,7 @@ export class Stage3 extends Phaser.Scene {
   }
 
   update() {
-    if (this.gameOver) return;
+    if (this.gameOver || this.stageCleared) return;
 
     this.player.update(this.cursors, this.keys);
 
