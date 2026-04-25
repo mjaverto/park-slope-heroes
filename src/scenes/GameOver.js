@@ -10,6 +10,8 @@ const COLOR_ACCENT = '#00e5ff';
 const COLOR_GOLD = '#ffd54a';
 const COLOR_RED = '#ff6666';
 const HERO_SCALE = 0.18;
+const OPTION_HIT_W = 420;
+const OPTION_HIT_H = 54;
 
 export class GameOver extends Phaser.Scene {
   constructor() {
@@ -240,8 +242,20 @@ export class GameOver extends Phaser.Scene {
   _buildOptions() {
     const baseY = this.victory ? 330 : 470;
     this.optionTexts = this.options.map((opt, i) => {
+      const y = baseY + i * 42;
+      const hitZone = this.add
+        .rectangle(512, y, OPTION_HIT_W, OPTION_HIT_H, 0x000000, 0.01)
+        .setOrigin(0.5)
+        .setInteractive({ useHandCursor: true });
+      const confirmOption = () => {
+        this.selectedIndex = i;
+        this._refreshSelection();
+        this._confirm();
+      };
+      hitZone.on('pointerdown', confirmOption);
+
       const text = this.add
-        .text(512, baseY + i * 42, opt.label, {
+        .text(512, y, opt.label, {
           fontFamily: 'monospace',
           fontSize: '24px',
           color: COLOR_TEXT,
@@ -250,16 +264,12 @@ export class GameOver extends Phaser.Scene {
         })
         .setOrigin(0.5)
         .setInteractive({ useHandCursor: true });
-      text.on('pointerdown', () => {
-        this.selectedIndex = i;
-        this._refreshSelection();
-        this._confirm();
-      });
+      text.on('pointerdown', confirmOption);
       return text;
     });
 
     this.add
-      .text(512, 552, 'Tap an option · ↑↓ + ENTER also works', {
+      .text(512, 552, 'Tap a big option · ↑↓ + ENTER also works', {
         fontFamily: 'monospace',
         fontSize: '14px',
         color: this.victory ? COLOR_TEXT : COLOR_DIM,

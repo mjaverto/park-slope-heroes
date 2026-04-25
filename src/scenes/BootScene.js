@@ -5,6 +5,7 @@ import { Cockroach } from '../entities/Cockroach.js';
 import { FrenchFries } from '../entities/FrenchFries.js';
 import { getStage } from '../data/stages.js';
 import { SoundManager } from '../audio/SoundManager.js';
+import { resetContinue, handlePlayerDeath } from '../utils/continueFlow.js';
 import { sealFinalSection, showStageTransition } from '../utils/stageTransition.js';
 
 const FRIES_HEAL = 25;
@@ -89,6 +90,7 @@ export class BootScene extends Phaser.Scene {
     // via `this.scene.sound_mgr?.playSfx(...)`. Don't shadow Phaser's built-in
     // `this.sound` — use `sound_mgr`.
     this.sound_mgr = new SoundManager(this);
+    resetContinue(this);
 
     this.gameOver = false;
     this.stageCleared = false;
@@ -526,39 +528,7 @@ export class BootScene extends Phaser.Scene {
   }
 
   checkGameOver() {
-    if (this.player.hp > 0 || this.gameOver || this._respawning) return;
-    // Player just died. Decrement lives.
-    this.lives -= 1;
-    this.updateLivesText();
-
-    if (this.lives > 0) {
-      // Respawn flow — keep the current wave state (rats stay where they are)
-      // so the "GET UP!" moment carries some weight.
-      this._respawning = true;
-      const banner = this.add.text(512, 288, 'GET UP!', {
-        fontFamily: 'monospace',
-        fontSize: '56px',
-        color: '#ffd54a',
-        stroke: '#000000',
-        strokeThickness: 6,
-      }).setOrigin(0.5).setDepth(100001).setScrollFactor(0);
-
-      this.time.delayedCall(GET_UP_TEXT_MS, () => {
-        if (banner && banner.scene) banner.destroy();
-        this._respawnPlayer();
-        this._respawning = false;
-      });
-      return;
-    }
-
-    // No lives left → GameOver
-    this.gameOver = true;
-    this.sound_mgr?.stopMusic();
-    this.scene.start('GameOver', {
-      score: this.score,
-      chosenChar: this.chosenKey,
-      victory: false,
-    });
+    handlePlayerDeath(this, { getUpTextMs: GET_UP_TEXT_MS });
   }
 
   _respawnPlayer() {

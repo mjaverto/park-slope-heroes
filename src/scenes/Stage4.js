@@ -6,6 +6,7 @@ import { FrenchFries } from '../entities/FrenchFries.js';
 import { Boss } from '../entities/Boss.js';
 import { getStage } from '../data/stages.js';
 import { SoundManager } from '../audio/SoundManager.js';
+import { handlePlayerDeath } from '../utils/continueFlow.js';
 import { sealFinalSection, showStageTransition } from '../utils/stageTransition.js';
 
 const FRIES_HEAL = 25;
@@ -640,35 +641,7 @@ export class Stage4 extends Phaser.Scene {
   }
 
   checkGameOver() {
-    if (this.player.hp > 0 || this.gameOver || this._respawning) return;
-    this.lives -= 1;
-    this.updateLivesText();
-
-    if (this.lives > 0) {
-      this._respawning = true;
-      const banner = this.add.text(512, 288, 'GET UP!', {
-        fontFamily: 'monospace',
-        fontSize: '56px',
-        color: '#ffd54a',
-        stroke: '#000000',
-        strokeThickness: 6,
-      }).setOrigin(0.5).setDepth(100001).setScrollFactor(0);
-
-      this.time.delayedCall(GET_UP_TEXT_MS, () => {
-        if (banner && banner.scene) banner.destroy();
-        this._respawnPlayer();
-        this._respawning = false;
-      });
-      return;
-    }
-
-    this.gameOver = true;
-    this.sound_mgr?.stopMusic();
-    this.scene.start('GameOver', {
-      score: this.score,
-      chosenChar: this.chosenKey,
-      victory: false,
-    });
+    handlePlayerDeath(this, { getUpTextMs: GET_UP_TEXT_MS });
   }
 
   _respawnPlayer() {
