@@ -101,10 +101,8 @@ export class Stage2 extends Phaser.Scene {
     this.load.image('rat-king-defeat', './assets/sprites/rat-king-defeat.png');
 
     // Audio — shared SFX/music keys. SoundManager's preload is idempotent on
-    // Phaser's loader so calling it again is cheap. Also load music_stage2
-    // which isn't in SoundManager's default music list yet.
+    // Phaser's loader so calling it again is cheap.
     new SoundManager(this).preload();
-    this.load.audio('music_stage2', './assets/audio/music/stage2.ogg');
   }
 
   create() {

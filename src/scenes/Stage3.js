@@ -103,10 +103,8 @@ export class Stage3 extends Phaser.Scene {
     }
 
     // Audio — shared SFX/music keys. SoundManager.preload is idempotent on
-    // Phaser's loader. music_stage3 isn't in the default list, so load it
-    // directly (loaderror tolerance above + startMusic no-op below).
+    // Phaser's loader.
     new SoundManager(this).preload();
-    this.load.audio('music_stage3', './assets/audio/music/stage3.ogg');
   }
 
   create() {

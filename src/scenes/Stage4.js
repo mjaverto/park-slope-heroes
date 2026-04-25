@@ -103,10 +103,8 @@ export class Stage4 extends Phaser.Scene {
     this.load.image('r-train', './assets/sprites/r-train.png');
 
     // Audio — shared SFX/music keys. SoundManager.preload is idempotent on
-    // Phaser's loader. music_stage4 isn't in the default list, so load it
-    // directly (loaderror tolerance above + startMusic no-op below).
+    // Phaser's loader.
     new SoundManager(this).preload();
-    this.load.audio('music_stage4', './assets/audio/music/stage4.ogg');
   }
 
   create() {
