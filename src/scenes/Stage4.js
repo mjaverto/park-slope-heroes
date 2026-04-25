@@ -426,10 +426,10 @@ export class Stage4 extends Phaser.Scene {
     const spawnY = PLAYER_SPAWN_Y;
     this.boss = new Boss(this, spawnX, spawnY, {
       key: 'beakzilla',
-      hp: 300,
-      damage: 16,
-      speed: 100,
-      contactDamage: 11,
+      hp: 260,
+      damage: 12,
+      speed: 85,
+      contactDamage: 6,
     });
     this.boss.onDefeat = () => this._onBossDefeated();
     if (this.bossHud) this.bossHud.label.setText(BOSS_LABEL);
